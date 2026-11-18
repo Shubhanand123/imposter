@@ -816,6 +816,13 @@ button.lb-row { cursor: pointer } button.lb-row:hover { border-color: var(--wate
   .gcard.net .net-join { max-width: 560px; justify-self: center; width: 100%; overflow-y: auto; max-height: 100% }
 }
 @media (min-width: 900px) and (max-height: 700px) { .side-players .label { display: none } .gcard .ghead .stack { display: none } }
+
+/* action bar floats over the crowd on computers too */
+@media (min-width: 900px) {
+  .dock { width: min(820px, calc(100% - 48px)); bottom: max(12px, calc((var(--crowd-h) - 68px) / 2)); padding: 10px 10px 10px 22px }
+  .dock .dock-sum strong { font-size: 16px } .dock .dock-sum span { font-size: 13px }
+  .gcard { height: calc(100dvh - 56px - var(--crowd-h) - 6px) }
+}
 @media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
 </style>
 </head>
@@ -1946,7 +1953,7 @@ function Game({ onMenu }: { onMenu: () => void }) {
   };
   const dock = dockFor();
   const dockEl = (
-      <motion.div className={`dock ${wide ? "in-card" : ""}`} initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2, ease }}>
+      <motion.div className="dock" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2, ease }}>
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div key={dock.sum} className="dock-sum" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
             <strong>{dock.sum}</strong><span>{dock.sub}</span>
@@ -2154,9 +2161,8 @@ function Game({ onMenu }: { onMenu: () => void }) {
             <motion.button className="go" type="button" whileTap={{ scale: 0.96 }} onClick={() => go("vote")}>Start the vote<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>
           </div>
         )}
-        {wide && dockEl}
       </motion.aside>
-      {!wide && dockEl}
+      {dockEl}
       {phase === "results" && <Confetti run={boom} />}
     </div>
   );
@@ -2717,14 +2723,14 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
             </>
           )}
         </div>
-        {dock && (
-          <div className="dock in-card">
-            <div className="dock-sum"><strong>{dock.sum}</strong><span>{dock.sub}</span></div>
-            {dock.alts?.map((a: any) => <motion.button key={a.label} type="button" className={`dock-alt ${a.icon ? "with-ico" : ""}`} whileTap={{ scale: 0.95 }} onClick={a.on}>{a.icon && <Ln d={a.icon} />}<span>{a.label}</span></motion.button>)}
-            {dock.btn && <MBWrap><motion.button type="button" className={`go dock-go ${dock.btn.tone ?? ""}`} disabled={dock.btn.disabled} whileTap={{ scale: 0.96 }} onClick={dock.btn.on}>{dock.btn.label}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button></MBWrap>}
-          </div>
-        )}
       </motion.aside>
+        {dock && (
+        <motion.div className="dock" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.4, ease }}>
+          <div className="dock-sum"><strong>{dock.sum}</strong><span>{dock.sub}</span></div>
+          {dock.alts?.map((a: any) => <motion.button key={a.label} type="button" className={`dock-alt ${a.icon ? "with-ico" : ""}`} whileTap={{ scale: 0.95 }} onClick={a.on}>{a.icon && <Ln d={a.icon} />}<span>{a.label}</span></motion.button>)}
+          {dock.btn && <MBWrap><motion.button type="button" className={`go dock-go ${dock.btn.tone ?? ""}`} disabled={dock.btn.disabled} whileTap={{ scale: 0.96 }} onClick={dock.btn.on}>{dock.btn.label}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button></MBWrap>}
+        </motion.div>
+      )}
       <AnimatePresence>{toast && <motion.div className="toast" role="status" initial={{ y: 30, opacity: 0, x: "-50%" }} animate={{ y: 0, opacity: 1, x: "-50%" }} exit={{ y: 20, opacity: 0, x: "-50%" }}>{toast}</motion.div>}</AnimatePresence>
       {cheer && <Confetti run={v?.round ?? 0} />}
     </div>
