@@ -1,0 +1,1877 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7FD3E3">
+<title>Imposter Party</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap">
+<style>
+/* Layout: one scene. The aquarium fills it, the crowd stands in front of the glass like visitors, and the controls
+   sit on a sheet that rises over the crowd (phone) or a panel docked beside the tank (desktop). */
+:root {
+  --paper: #F4F3EF; --card: #FFFFFF; --ink: #15171A; --muted: #6B6E74; --line: #E4E2DC;
+  --water: #0B4757; --accent: #E5484D; --ok: #1F9D8B; --chip: #F0EEE8;
+  --display: "Inter Tight", "Inter", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+.gutter { padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)) }
+html, body { background: #7FD3E3 }
+body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45 }
+.boot { padding: 40px 0; text-align: center; color: var(--water) }
+
+.frame { min-height: 100dvh }
+.scene { position: relative; height: max(560px, 72svh); overflow: hidden; isolation: isolate }
+.scene > .tank { position: absolute; inset: 0 }
+.brand { position: absolute; z-index: 4; top: 0; left: 0; right: 0; padding-block: 16px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; color: var(--water) }
+.mark { font-family: var(--display); font-weight: 800; letter-spacing: .26em; font-size: 13px }
+.mark i { font-style: normal; color: var(--accent) }
+.brand small { font-size: 12px; font-weight: 500; opacity: .75 }
+/* visitors in front of the glass: they don't catch the pointer, so the fish still react underneath */
+.visitors { position: absolute; z-index: 3; inset: 0; pointer-events: none; overflow: hidden }
+/* a little reflected light on the glass in front of the crowd ties the two layers together */
+.visitors::after { content: ""; position: absolute; inset: auto 0 0 0; height: 46%; pointer-events: none;
+  background: linear-gradient(180deg, rgba(127,211,227,0) 0%, rgba(127,211,227,.10) 60%, rgba(11,71,87,.14) 100%) }
+
+.panel { position: relative; z-index: 5; margin-top: -30px; background: var(--paper); border-radius: 28px 28px 0 0; padding-block: 10px 0;
+  box-shadow: 0 -18px 40px -24px rgba(11,71,87,.55); display: grid; gap: 14px; align-content: start; grid-auto-rows: max-content }
+.panel::before { content: ""; display: block; margin-inline: auto; width: 40px; height: 4px; border-radius: 4px; background: #D6D3CB; margin-bottom: 4px }
+
+@media (min-width: 900px) {
+  html, body { height: 100% }
+  .frame { display: grid; grid-template-columns: minmax(0, 1fr) 440px; height: 100dvh }
+  .scene { height: 100%; }
+  .panel { margin: 0; height: 100dvh; overflow-y: auto; border-radius: 0; padding-block: 22px; box-shadow: -24px 0 48px -30px rgba(11,71,87,.6) }
+  .panel::before { display: none }
+}
+
+/* ---------- cards ---------- */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 12px; transform-style: preserve-3d; will-change: transform }
+.card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -.01em }
+.label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted) }
+.pack-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px }
+.pack-head > div { display: grid; gap: 2px; min-width: 0 }
+.badge { flex: none; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: var(--chip); color: var(--muted) }
+.badge.ai { background: #E3F4F1; color: var(--ok) }
+.words { display: flex; flex-wrap: wrap; gap: 6px }
+.word { padding: 6px 11px; border-radius: 999px; background: var(--chip); font-size: 13.5px; font-weight: 500 }
+.row-btns { display: flex; gap: 8px; flex-wrap: wrap }
+.btn { border: 0; border-radius: 12px; padding: 12px 16px; font: 600 14.5px var(--body); cursor: pointer }
+.btn.dark { background: var(--ink); color: #fff }
+.btn.light { background: var(--chip); color: var(--ink) }
+.btn:disabled { opacity: .6; cursor: default }
+.status { margin: 0; font-size: 13.5px; color: var(--muted); display: flex; align-items: center; gap: 10px }
+.status.err { color: var(--accent) }
+.dots { display: inline-flex; gap: 4px }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--water); animation: blink 1s infinite }
+.dots i:nth-child(2) { animation-delay: .15s } .dots i:nth-child(3) { animation-delay: .3s }
+@keyframes blink { 0%,100% { opacity: .2 } 50% { opacity: 1 } }
+.primary { display: flex; align-items: center; justify-content: space-between; padding: 17px 18px; border-radius: 16px; background: var(--ink); color: #fff; font: 600 16px var(--body); border: 0; width: 100%; cursor: pointer }
+.primary svg, .ico svg, .chev { width: 18px; height: 18px }
+.list { padding: 0; gap: 0; overflow: hidden }
+.item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; cursor: pointer }
+.item + .item { border-top: 1px solid var(--line) }
+.ico { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: #E6F1F3; color: var(--water) }
+.item > div { flex: 1; min-width: 0; display: grid }
+.item strong { font-size: 15px; font-weight: 600 }
+.item span { font-size: 13px; color: var(--muted) }
+.chev { color: #B4B1AA }
+.ln { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round }
+.btn:focus-visible, .primary:focus-visible, .switch:focus-visible, .seg button:focus-visible, .item:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 2px }
+
+/* ---------- proximity glass: solid at rest, glassy only as the pointer comes near ---------- */
+.morph { --near: 0; --mx: 50%; --my: 50% }
+.morph .lens { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: var(--near); z-index: 3;
+  background: radial-gradient(90px circle at var(--mx) var(--my), rgba(255,255,255,.75), rgba(255,255,255,.18) 45%, rgba(255,255,255,0) 70%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(255,255,255,.55), 0 10px 26px -12px rgba(11,71,87,.55) }
+
+.setting { display: flex; align-items: center; gap: 14px; padding: 12px 0; cursor: pointer }
+.setting + .setting { border-top: 1px solid var(--line) }
+.setting > div { flex: 1; min-width: 0; display: grid; gap: 1px }
+.setting strong { font-size: 15px; font-weight: 600 }
+.setting span { font-size: 13px; color: var(--muted) }
+.switch { position: relative; flex: none; width: 62px; height: 34px; border-radius: 999px; border: 0; padding: 0; cursor: pointer; background: #DAD7CF; overflow: hidden;
+  transform: scale(calc(1 + var(--near) * .06)); transition: transform .25s }
+.switch .fill { position: absolute; inset: 0; background: var(--ok); transform: translateX(-100%); transition: transform .38s cubic-bezier(.5,0,.1,1) }
+.switch .txt { position: absolute; top: 0; bottom: 0; display: grid; place-items: center; font: 700 10px var(--body); letter-spacing: .08em; transition: opacity .2s }
+.switch .on { left: 9px; color: #fff; opacity: 0 }
+.switch .off { right: 8px; color: #8A867E }
+/* the thumb turns into a glass droplet as the pointer approaches */
+.switch .thumb { position: absolute; z-index: 2; top: 3px; left: 3px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #8A867E;
+  background: rgba(255,255,255, calc(1 - var(--near) * .3)); backdrop-filter: blur(calc(var(--near) * 3px)) saturate(calc(1 + var(--near) * .8));
+  box-shadow: 0 2px 5px rgba(0,0,0,.18), inset 0 1px 1px rgba(255,255,255, var(--near)), inset 0 -2px 4px rgba(0,0,0, calc(var(--near) * .12));
+  transition: transform .42s cubic-bezier(.34,1.56,.64,1), width .18s, color .3s }
+.switch .thumb svg { width: 14px; height: 14px; stroke-width: 2.6 }
+.switch .thumb .yes { display: none }
+.switch:active .thumb { width: 34px }
+.switch[aria-checked="true"] .fill { transform: translateX(0) }
+.switch[aria-checked="true"] .thumb { transform: translateX(28px); color: var(--ok) }
+.switch[aria-checked="true"]:active .thumb { transform: translateX(22px) }
+.switch[aria-checked="true"] .thumb .yes { display: block }
+.switch[aria-checked="true"] .thumb .no { display: none }
+.switch[aria-checked="true"] .on { opacity: 1 }
+.switch[aria-checked="true"] .off { opacity: 0 }
+
+.seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 14px; background: var(--chip); overflow: hidden }
+.seg .pill { position: absolute; z-index: 1; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 11px;
+  background: rgba(255,255,255, calc(1 - var(--near) * .45)); backdrop-filter: blur(calc(var(--near) * 6px)) saturate(calc(1 + var(--near)));
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255, var(--near)), inset 0 0 0 1px rgba(255,255,255, calc(var(--near) * .8));
+  transition: transform .42s cubic-bezier(.34,1.4,.64,1) }
+.seg[data-v="1"] .pill { transform: translateX(100%) }
+.seg button { position: relative; z-index: 2; border: 0; background: none; padding: 10px 8px; border-radius: 11px; cursor: pointer; display: grid; gap: 1px; justify-items: center; color: var(--muted); font-family: var(--body) }
+.seg button strong { font-size: 14px; font-weight: 600 }
+.seg button span { font-size: 11.5px }
+.seg button[aria-pressed="true"] { color: var(--ink) }
+
+/* ---------- crowd ---------- */
+.foot { text-align: center; font-size: 12px; color: var(--muted); margin: 4px 0 0 }
+.panel-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px }
+.panel-title h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -.02em }
+.panel-title span { font-size: 12.5px; color: var(--muted) }
+
+/* ---------- panel: three steps and a start bar that stays in reach ---------- */
+.panel { gap: 0 }
+.panel-body { display: grid; gap: 14px; align-content: start; grid-auto-rows: max-content; padding-bottom: 16px }
+.panel-title h1 { font-size: 21px }
+.step-head { display: flex; align-items: flex-start; gap: 12px }
+.step-head > div { display: grid; gap: 1px; min-width: 0 }
+.step-head span:not(.num) { font-size: 13px; color: var(--muted) }
+.num { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--water); color: #fff; font: 700 13px var(--display) }
+.word.more { border: 0; cursor: pointer; background: transparent; color: var(--water); font-weight: 600; text-decoration: underline; text-underline-offset: 3px }
+.word.skel { height: 31px; background: linear-gradient(90deg, #EEECE6, #F7F6F2, #EEECE6); background-size: 200% 100%; animation: shimmer 1.2s linear infinite }
+@keyframes shimmer { to { background-position: -200% 0 } }
+.modes { display: grid; gap: 8px }
+.mode { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; font-family: var(--body); color: var(--ink); transition: border-color .2s, background .2s }
+.mode[aria-checked="true"] { border-color: var(--water); background: #F1F8F9 }
+.mode-txt { flex: 1; min-width: 0; display: grid }
+.mode-txt strong { font-size: 15px; font-weight: 600 }
+.mode-txt span { font-size: 13px; color: var(--muted) }
+.radio { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #C9C6BE; display: grid; place-items: center }
+.mode[aria-checked="true"] .radio { border-color: var(--water) }
+.radio i { width: 10px; height: 10px; border-radius: 50%; background: var(--water) }
+.cta { position: sticky; bottom: 0; z-index: 6; display: flex; align-items: center; gap: 12px; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--paper); border-top: 1px solid var(--line); box-shadow: 0 -12px 24px -18px rgba(11,71,87,.35) }
+.cta-sum { flex: 1; min-width: 0; display: grid }
+.cta-sum strong { font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.cta-sum span { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.go { flex: none; display: inline-flex; align-items: center; gap: 10px; padding: 14px 18px; border: 0; border-radius: 14px; background: var(--ink); color: #fff; font: 600 15px var(--body); cursor: pointer; overflow: hidden }
+.go svg { width: 18px; height: 18px }
+.go > span { display: inline-block; min-width: 9.2ch }
+.trophy { pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0; border-radius: 999px; background: #fff; color: var(--water); font: 600 12.5px var(--body); cursor: pointer; box-shadow: 0 6px 14px -8px rgba(0,70,90,.6) }
+.trophy svg { width: 15px; height: 15px }
+.toast { position: fixed; z-index: 50; left: 50%; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); padding: 11px 16px; border-radius: 12px; background: var(--ink); color: #fff; font-size: 14px; box-shadow: 0 12px 30px -12px rgba(0,0,0,.5) }
+.go:focus-visible, .mode:focus-visible, .trophy:focus-visible, .word.more:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 2px }
+@media (min-width: 900px) {
+  .panel { display: flex; flex-direction: column; padding-block: 0 }
+  .panel-body { flex: 1; padding-top: 22px }
+  .toast { left: auto; right: 24px; bottom: 96px }
+}
+
+/* ---------- word library & random ---------- */
+.library { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; margin-inline: -2px; scrollbar-width: none; scroll-snap-type: x proximity }
+.library::-webkit-scrollbar { display: none }
+.lib { flex: none; scroll-snap-align: start; display: inline-flex; align-items: center; gap: 6px; padding: 9px 13px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; color: var(--ink); font: 600 13.5px var(--body); cursor: pointer; white-space: nowrap; transition: border-color .2s, background .2s, color .2s }
+.lib.on { border-color: var(--water); background: var(--water); color: #fff }
+.lib.dice { background: var(--ink); color: #fff; border-color: var(--ink) }
+.lib.dice span { display: inline-block; font-size: 16px }
+.lib:focus-visible, .word.pick:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 2px }
+.word.pick { border: 0; cursor: pointer; font-family: var(--body); color: var(--ink); transition: background .2s, color .2s }
+.word.pick:hover { background: #E7E4DC }
+.word.pick.off { background: transparent; color: #A9A59D; text-decoration: line-through; box-shadow: inset 0 0 0 1.5px #E2DFD7 }
+.tip { margin: -4px 0 0; font-size: 12.5px; color: var(--muted) }
+.go:disabled { opacity: .5; cursor: default }
+
+/* ---------- steps that fold, with progress ---------- */
+.progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: -4px 0 2px }
+.progress span { display: block; height: 4px; border-radius: 4px; background: #E2DFD7; overflow: hidden }
+.progress i { display: block; height: 100%; background: var(--ok); transform-origin: left }
+.step { gap: 0; padding: 0 }
+.step-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 0; background: none; cursor: pointer; text-align: left; font-family: var(--body); color: var(--ink); border-radius: 18px }
+.step-head > div { flex: 1; min-width: 0; display: grid; gap: 1px }
+.step-head > div span { font-size: 13px; color: var(--muted) }
+.step-head .sum { color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.step-head .caret { flex: none; width: 18px; height: 18px; color: #A8A49B }
+.step-head:focus-visible { outline: 3px solid #7FB8C6; outline-offset: -3px }
+.num.done { background: var(--ok) }
+.num svg { width: 15px; height: 15px; stroke: #fff; stroke-width: 3 }
+.step-clip { overflow: hidden }
+.step-body { display: grid; gap: 12px; padding: 0 16px 16px }
+.btn.next { justify-self: start; display: inline-flex; align-items: center; gap: 8px; background: var(--chip); color: var(--ink) }
+.btn.next svg { width: 16px; height: 16px }
+
+/* ---------- in-game ---------- */
+.game-scene { height: max(300px, 38svh) }
+
+@media (min-width: 900px) { .game-scene { height: 100% } }
+.roundtag { pointer-events: auto; padding: 6px 12px; border-radius: 999px; background: #fff; font: 600 12.5px var(--body); color: var(--water); box-shadow: 0 6px 14px -8px rgba(0,70,90,.6) }
+.scene-banner { position: absolute; z-index: 5; left: 0; right: 0; margin-inline: auto; top: 22%; padding: 14px 22px; border-radius: 16px; background: #fff; color: var(--ink); font: 700 clamp(17px, 2.4vw, 28px) var(--display); letter-spacing: -.02em; width: max-content; max-width: calc(100% - 32px); text-align: center; text-wrap: balance; box-shadow: 0 18px 40px -16px rgba(0,60,80,.6) }
+.phases { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--chip) }
+.ph { display: grid; justify-items: center; gap: 2px; padding: 7px 2px; border: 0; border-radius: 10px; background: none; cursor: pointer; font: 600 11.5px var(--body); color: var(--muted) }
+.ph i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; background: #fff; color: var(--muted) }
+.ph.on { background: #fff; color: var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,.08) }
+.ph.on i { background: var(--water); color: #fff }
+.ph.past i { background: var(--ok); color: #fff }
+.ph:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 1px }
+.stage { display: grid; gap: 14px; justify-items: stretch }
+.title { margin: 0; font: 700 22px var(--display); letter-spacing: -.02em; text-wrap: balance }
+.muted { margin: 0; color: var(--muted); font-size: 14px }
+.dots { display: flex; gap: 6px; justify-content: center }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: #D8D5CD; transition: background .3s, transform .3s }
+.dots i.done { background: var(--ok) }
+.dots i.now { background: var(--water); transform: scale(1.35) }
+.avatar { flex: none; display: inline-block; border-radius: 50%; background-color: #DDEFF2; background-repeat: no-repeat }
+.handoff { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 18px 0 6px }
+.who { margin: 0; font: 800 34px var(--display); letter-spacing: -.03em }
+.go.wide { width: 100%; justify-content: center }
+.go:disabled { opacity: .45; cursor: default }
+.dealt { display: grid; gap: 14px }
+
+.card3d { position: relative; height: 340px; perspective: 1100px; cursor: pointer; user-select: none; -webkit-user-select: none; touch-action: none; border-radius: 22px }
+.card3d:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 3px }
+.side { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; overflow: hidden; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; text-align: center }
+.back { background: #0B4757; color: #fff; box-shadow: 0 20px 40px -24px rgba(0,50,60,.8);
+  background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.08) 0 2px, transparent 3px), radial-gradient(circle at 70% 60%, rgba(255,255,255,.06) 0 2px, transparent 3px);
+  background-size: 34px 34px, 46px 46px }
+.cardwater { position: absolute; left: 0; right: 0; bottom: 0; background: #3BB3C9 }
+.cardwater svg { position: absolute; left: 0; width: 200%; top: -14px; height: 16px; fill: #3BB3C9; animation: cwave 1.6s linear infinite }
+@keyframes cwave { to { transform: translateX(-50%) } }
+.back-mark { position: relative; display: grid; gap: 6px; justify-items: center }
+.back-mark .mark { font-size: 15px; color: #fff }
+.back-mark strong { font: 700 24px var(--display) }
+.back-mark span:last-child { font-size: 13px; opacity: .75 }
+.face { background: #fff; border: 1px solid var(--line); box-shadow: 0 20px 40px -24px rgba(0,50,60,.6) }
+.face .big { font: 800 clamp(36px, 9vw, 48px) var(--display); letter-spacing: -.03em; line-height: 1.02 }
+.face p { margin: 0; color: var(--muted); font-size: 14px; max-width: 26ch }
+.face .chip { padding: 5px 11px; border-radius: 999px; background: var(--chip); font-size: 13px; font-weight: 600 }
+.face.imp { background: #E5484D; border-color: #E5484D; color: #fff }
+.face.imp .label, .face.imp p { color: rgba(255,255,255,.85) }
+.face.imp .chip { background: rgba(255,255,255,.2) }
+
+.wtimer { position: relative; width: min(220px, 60vw); aspect-ratio: 1; justify-self: center }
+.wtimer svg { width: 100%; height: 100% }
+.twave { animation: twave 3s linear infinite }
+.twave.slow { animation-duration: 5s; animation-direction: reverse }
+@keyframes twave { to { transform: translateX(-100px) } }
+.tbub { fill: none; stroke: #fff; stroke-width: 1.6; opacity: 0; animation: tbub 2.8s ease-in infinite }
+@keyframes tbub { 0% { transform: translateY(0); opacity: 0 } 15% { opacity: .9 } 100% { transform: translateY(-150px); opacity: 0 } }
+.tlabel { position: absolute; inset: 0; display: grid; place-content: center; text-align: center }
+.tlabel strong { font: 800 38px var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
+.tlabel span { font-size: 12.5px; color: var(--muted); font-weight: 600 }
+.tctl { display: flex; gap: 8px; justify-content: center }
+.order { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.order li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: #fff; border: 1px solid var(--line); cursor: pointer }
+.order li.now { border-color: var(--water); background: #F1F8F9 }
+.order .n { width: 18px; text-align: center; font: 700 13px var(--display); color: var(--muted) }
+.order strong { flex: 1; font-size: 15px }
+.speaking { font-size: 11.5px; font-weight: 700; color: #fff; background: var(--water); padding: 3px 9px; border-radius: 999px }
+
+.vgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+.vtile { position: relative; display: grid; justify-items: center; gap: 8px; padding: 16px 8px; border-radius: 16px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; font-family: var(--body); color: var(--ink) }
+.vtile strong { font-size: 15px }
+.vtile.on { border-color: #E5484D; background: #FFF4F4 }
+.stamp { position: absolute; top: 10px; right: 10px; border: 2px solid #E5484D; color: #E5484D; font: 800 12px var(--display); letter-spacing: .1em; padding: 2px 6px; border-radius: 5px }
+.row-btns.spread { justify-content: space-between; align-items: center }
+.btn[aria-pressed="true"] { background: var(--ink); color: #fff }
+
+.bars { display: grid; gap: 8px }
+.bar { display: flex; align-items: center; gap: 10px }
+.bar strong { width: 64px; font-size: 14px }
+.bar .track { flex: 1; height: 12px; border-radius: 6px; background: #E8E5DE; overflow: hidden }
+.bar .track i { display: block; height: 100%; border-radius: 6px; background: #9BB8BF }
+.bar.lead .track i { background: #E5484D }
+.bar .cnt { width: 16px; text-align: right; font: 700 15px var(--display); font-variant-numeric: tabular-nums }
+.verdict { display: grid; justify-items: center; gap: 8px; padding: 18px; border-radius: 18px; text-align: center; background: #fff; border: 1px solid var(--line) }
+.verdict strong { font: 700 20px var(--display) }
+.verdict span { color: var(--muted); font-size: 14px }
+.verdict.caught { border-color: #F4B9BB; background: #FFF6F6 }
+.verdict.wrong { border-color: #BFE3DC; background: #F2FAF8 }
+
+.ggrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.gtile { padding: 16px 10px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; font: 600 15px var(--body); cursor: pointer; color: var(--ink) }
+.gtile:hover { border-color: var(--water) }
+
+.result { display: grid; gap: 6px; padding: 20px; border-radius: 20px; color: #fff; background: var(--ok) }
+.result.escaped, .result.stolen { background: #E5484D }
+.result .label { color: rgba(255,255,255,.85) }
+.result strong { font: 800 24px var(--display); letter-spacing: -.02em; text-wrap: balance }
+.wordline { display: flex; gap: 8px; align-items: baseline; font-size: 14px; opacity: .95 }
+.board { display: grid; gap: 6px }
+.brow { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--line) }
+.brow .rank { width: 16px; font: 700 13px var(--display); color: var(--muted) }
+.brow strong { flex: 1; font-size: 15px; display: flex; gap: 8px; align-items: center }
+.brow em { font-style: normal; font-size: 11px; font-weight: 700; color: #E5484D; border: 1.5px solid #E5484D; padding: 1px 6px; border-radius: 999px }
+.plus { font: 700 13px var(--display); color: var(--ok); background: #E3F4F1; padding: 3px 8px; border-radius: 999px }
+.total { width: 26px; text-align: right; font: 800 18px var(--display); font-variant-numeric: tabular-nums }
+.confetti { position: fixed; left: 50%; top: 40%; z-index: 60; pointer-events: none }
+.confetti i { position: absolute; border-radius: 2px }
+@media (min-width: 900px) { .confetti { left: calc(100% - 220px) } }
+
+/* ---------- centred table: the game card floats in the middle, the aquarium is softened behind it ---------- */
+.center-stage { position: relative; min-height: 100dvh; display: grid; place-items: center; box-sizing: border-box;
+  padding: 64px 12px calc(104px + env(safe-area-inset-bottom, 0px)); background: #E6F4F6 }
+@media (min-width: 900px) { .center-stage { display: grid; grid-template-columns: none; height: auto; padding: 72px 24px 150px } }
+.center-stage .game-scene { position: fixed; inset: 0; height: auto; z-index: 0 }
+.center-stage .game-scene .tank { opacity: .58 }
+.center-stage .brand { position: fixed; z-index: 7 }
+.veil { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse 58% 52% at 50% 46%, rgba(244,243,239,.62) 0%, rgba(244,243,239,.28) 55%, rgba(244,243,239,0) 80%) }
+.gcard { position: relative; z-index: 5; width: min(480px, 100%); max-height: calc(100dvh - 168px); overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; background: var(--paper); border-radius: 30px; scrollbar-width: thin;
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 0 0 1px rgba(11,71,87,.06), 0 50px 90px -40px rgba(6,50,62,.6), 0 18px 34px -24px rgba(6,50,62,.35) }
+@media (min-width: 900px) { .gcard { max-height: calc(100dvh - 120px) } }
+.gcard .panel-body { padding-top: 18px; padding-bottom: 20px }
+.gcard .cta { border-top: 1px solid var(--line); background: var(--paper) }
+.center-stage .confetti { left: 50% !important; top: 34%; z-index: 4 }
+.ghead { display: flex; align-items: center; gap: 12px }
+.ghead > div:last-child { display: grid; min-width: 0 }
+.ghead strong { font: 700 15px var(--display); letter-spacing: -.01em }
+.ghead span { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.stack { display: flex; flex: none }
+.stack .avatar { box-shadow: 0 0 0 2.5px var(--paper) }
+.stack .avatar + .avatar { margin-left: -9px }
+.ph { position: relative }
+.ph i, .ph b { position: relative; z-index: 1; font-weight: inherit }
+.ph.on { background: none !important; box-shadow: none !important }
+.phpill { position: absolute; inset: 0; border-radius: 10px; background: #fff; box-shadow: 0 2px 8px rgba(11,71,87,.1) }
+.roundtag { font-weight: 600 }
+
+/* ---------- glass look: the card is see-through and the aquarium shows through it, blurred ---------- */
+.look { pointer-events: auto; display: flex; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.55); box-shadow: 0 6px 14px -8px rgba(0,70,90,.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px) }
+.look button { position: relative; border: 0; background: none; padding: 6px 13px; border-radius: 999px; font: 600 12.5px var(--body); color: var(--water); cursor: pointer }
+.look b { position: relative; z-index: 1; font-weight: inherit }
+.lookpill { position: absolute; inset: 0; border-radius: 999px; background: #fff; box-shadow: 0 1px 4px rgba(11,71,87,.18) }
+.look button:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 1px }
+.gcard, .gcard .cta { transition: background .45s, box-shadow .45s, border-color .45s }
+.glass .game-scene .tank { opacity: .95 }
+.glass .veil { opacity: .12 }
+.glass .gcard { background: linear-gradient(160deg, rgba(255,255,255,.24), rgba(255,255,255,.05));
+  backdrop-filter: blur(14px) saturate(1.6); -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), inset 0 0 0 1px rgba(255,255,255,.45), 0 40px 80px -36px rgba(6,50,62,.55) }
+.glass .gcard .cta { background: rgba(236,248,250,.62); border-top-color: rgba(255,255,255,.7); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4) }
+.glass .phases { background: rgba(255,255,255,.16) }
+.glass .phpill { background: rgba(255,255,255,.85) }
+.glass .ph i { background: rgba(255,255,255,.7) }
+.glass .ph.on i { background: var(--water) }
+.glass .ph.past i { background: var(--ok) }
+.glass .order li, .glass .vtile, .glass .brow, .glass .gtile, .glass .verdict, .glass .face:not(.imp) {
+  background: rgba(255,255,255,.3); border-color: rgba(255,255,255,.6) }
+.glass .order li.now { background: rgba(255,255,255,.82); border-color: var(--water) }
+.glass .vtile.on { background: rgba(255,240,240,.82); border-color: #E5484D }
+.glass .btn.light { background: rgba(255,255,255,.4) }
+.glass .stack .avatar { box-shadow: 0 0 0 2.5px rgba(255,255,255,.85) }
+.glass .bar .track { background: rgba(255,255,255,.5) }
+.glass .wtimer svg > g rect { fill: rgba(255,255,255,.35) }
+.glass .wtimer circle[stroke="#E2DFD7"] { stroke: rgba(255,255,255,.6) }
+.glass .ghead span, .glass .muted, .glass .label { color: #34444B }
+.glass .gcard { text-shadow: 0 1px 1px rgba(255,255,255,.35) }
+.glass .go, .glass .face.imp { text-shadow: none }
+@media (prefers-reduced-transparency: reduce) { .glass .gcard { background: var(--paper); backdrop-filter: none } }
+
+/* ---------- computer: the game fills the screen above the walking crowd ---------- */
+.side-players { display: none }
+@media (min-width: 900px) {
+  .center-stage { align-items: start; padding: 60px 28px 0 }
+  .gcard { width: 100%; max-width: 1480px; height: calc(100dvh - 60px - var(--crowd-h, 210px)); max-height: none; border-radius: 30px }
+  .gcard .panel-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 270px minmax(0, 1fr); grid-template-rows: auto auto 1fr;
+    column-gap: 34px; row-gap: 16px; padding: 24px 28px 24px 22px; align-items: start }
+  .gcard .ghead { grid-column: 1; grid-row: 1 }
+  .gcard .phases { grid-column: 1; grid-row: 2; grid-template-columns: 1fr; gap: 2px; padding: 5px }
+  .gcard .ph { display: flex; justify-content: flex-start; align-items: center; gap: 10px; padding: 10px 12px; font-size: 14px }
+  .gcard .ph i { width: 24px; height: 24px; font-size: 12px }
+  .side-players { grid-column: 1; grid-row: 3; display: grid; gap: 6px; align-content: start; padding-top: 6px }
+  .sp { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; background: rgba(255,255,255,.55) }
+  .sp strong { flex: 1; font-size: 14px }
+  .sp span { font: 700 15px var(--display); font-variant-numeric: tabular-nums }
+  .glass .sp { background: rgba(255,255,255,.28) }
+  .gcard .panel-body > .stage { grid-column: 2; grid-row: 1 / span 3; align-self: stretch; align-content: safe center; justify-items: center;
+    padding-left: 34px; border-left: 1px solid rgba(11,71,87,.1); min-height: 100% }
+  .glass .gcard .panel-body > .stage { border-left-color: rgba(255,255,255,.5) }
+  .stage > * { width: min(100%, 760px) }
+  .stage > .dots { width: auto }
+  .st-deal .handoff .who { font-size: 46px }
+  .st-deal .card3d { height: min(440px, 44vh) }
+  .st-deal .title, .st-vote .title, .st-reveal .title, .st-guess .title { font-size: 28px; text-align: center }
+  .st-clues { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 40px; align-items: center }
+  .st-clues > * { width: 100% }
+  .st-clues > .title { grid-column: 1; grid-row: 1; font-size: 28px }
+  .st-clues > .muted { grid-column: 1; grid-row: 2 }
+  .st-clues > .wtimer { grid-column: 1; grid-row: 3; width: min(300px, 32vh); justify-self: center }
+  .st-clues > .tctl { grid-column: 1; grid-row: 4 }
+  .st-clues > .order { grid-column: 2; grid-row: 1 / span 4; align-self: center }
+  .st-clues > .row-btns { grid-column: 2; grid-row: 5 }
+  .st-clues .order li { padding: 12px 14px }
+  .st-vote .vgrid { grid-template-columns: repeat(4, 1fr) }
+  .st-vote .vtile { padding: 26px 10px }
+  .st-guess .ggrid { grid-template-columns: repeat(4, 1fr) }
+  .st-reveal .bars { gap: 12px }
+  .st-reveal .bar strong { width: 90px; font-size: 15px }
+  .st-reveal .bar .track { height: 16px }
+  .st-results { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 28px; align-items: start }
+  .st-results > * { width: 100% }
+  .st-results > .result { grid-column: 1; grid-row: 1; min-height: 220px; align-content: end; padding: 28px }
+  .st-results > .result strong { font-size: 32px }
+  .st-results > .board { grid-column: 2; grid-row: 1 / span 2 }
+  .st-results > .go { grid-column: 1; grid-row: 2; align-self: end }
+  .gcard .cta { padding-inline: 28px }
+}
+
+@media (min-width: 900px) {
+  .gcard { overflow: hidden }
+  .gcard .panel-body { overflow-y: auto; scrollbar-width: thin }
+  .gcard .cta { position: static; flex: none; border-radius: 0 0 30px 30px }
+  .gcard .stage { font-size: 16px }
+  .gcard .muted { font-size: 15px }
+  .st-deal .handoff { gap: 14px }
+  .st-deal .handoff > div:has(.avatar) { scale: 1.35; margin-block: 14px }
+  .st-deal .go.wide, .st-vote .row-btns, .st-reveal .go.wide, .st-reveal .verdict { width: min(100%, 520px) }
+  .st-deal .dealt { justify-items: center }
+  .st-deal .dealt > * { width: min(100%, 620px) }
+  .st-vote .vtile strong { font-size: 16px }
+  .ghead strong { font-size: 17px }
+}
+
+/* ---------- phone: the card fills the screen from the top bar down to the crowd's heads ---------- */
+@media (max-width: 899px) {
+  .center-stage { align-items: start; padding: 54px 10px 0; --crowd-h: calc(118px + env(safe-area-inset-bottom, 0px)) }
+  .gcard { width: 100%; height: calc(100dvh - 54px - var(--crowd-h)); max-height: none; overflow: hidden; border-radius: 26px }
+  .gcard .panel-body { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-rows: auto auto 1fr; padding: 16px 16px 18px }
+  .gcard .panel-body > .stage { align-self: stretch; align-content: safe center }
+  .gcard .cta { position: static; flex: none; padding: 10px 16px 12px }
+  .st-deal .card3d { height: min(340px, 46dvh) }
+  .st-clues .wtimer { width: min(200px, 28dvh) }
+  /* a little ledge of light where the crowd stands, so the card and the people sit on clear bands */
+  .center-stage .visitors::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--crowd-h) + 30px);
+    background: linear-gradient(180deg, rgba(127,211,227,0), rgba(127,211,227,.35) 40%, rgba(11,71,87,.18)); pointer-events: none }
+}
+
+/* ---------- the action dock: floats over the people at the bottom ---------- */
+.center-stage .stage .go, .center-stage .st-vote .row-btns.spread, .center-stage .st-clues > .row-btns, .center-stage .gcard .cta { display: none !important }
+.dock { position: fixed; z-index: 8; left: 50%; translate: -50% 0; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: min(calc(100% - 20px), 720px);
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 18px; border-radius: 20px;
+  background: rgba(244,243,239,.92); box-shadow: 0 0 0 1px rgba(11,71,87,.08), 0 20px 40px -18px rgba(6,40,50,.65) }
+.glass .dock { background: rgba(240,250,252,.6); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(255,255,255,.5), 0 20px 40px -18px rgba(6,40,50,.65) }
+.dock-sum { flex: 1; min-width: 0; display: grid; line-height: 1.3 }
+.dock-sum strong { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.dock-sum span { font-size: 12.5px; color: #4E5A60; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.dock-alt { flex: none; border: 0; border-radius: 13px; padding: 13px 14px; background: rgba(255,255,255,.75); font: 600 14px var(--body); color: var(--ink); cursor: pointer }
+.dock-alt.on { background: var(--ink); color: #fff }
+.dock-go { padding: 14px 18px; border-radius: 14px; white-space: nowrap }
+.dock-go.red { background: #E5484D }
+.dock-go svg { width: 17px; height: 17px }
+.dock button:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 2px }
+.center-stage { --dock-h: 74px }
+@media (max-width: 899px) {
+  .center-stage { --crowd-h: calc(150px + env(safe-area-inset-bottom, 0px)) }
+  .dock { padding-left: 14px; gap: 8px }
+  .dock-sum strong { font-size: 14px }
+  .dock-alt { padding: 12px 11px; font-size: 13px }
+  .dock-go { padding: 13px 14px; font-size: 14px }
+}
+@media (min-width: 900px) { .center-stage { --crowd-h: 210px } }
+.dock.in-card { position: static; translate: none; width: auto; flex: none; border-radius: 0 0 30px 30px; padding: 14px 18px 14px 28px; gap: 12px;
+  background: rgba(244,243,239,.96); box-shadow: none; border-top: 1px solid var(--line) }
+.glass .dock.in-card { background: rgba(240,250,252,.55); box-shadow: none; border-top: 1px solid rgba(255,255,255,.6) }
+.dock.in-card .dock-sum strong { font-size: 16px } .dock.in-card .dock-sum span { font-size: 13px }
+.dock.in-card .dock-go { padding: 14px 22px; font-size: 15px }
+@media (max-width: 360px) { .dock-sum span { display: none } }
+
+/* ---------- water switches: turning one on fills it with water from below; off drains it ---------- */
+.switch { background: #DCE7EA; box-shadow: inset 0 2px 4px rgba(11,71,87,.14) }
+.switch .fill { transform: translateY(112%); background: linear-gradient(180deg, #4FC3D6 0%, #1F9D8B 100%); transition: transform .75s cubic-bezier(.34,1.32,.5,1) }
+.switch .fill::before, .switch .fill::after { content: ""; position: absolute; left: 0; width: 200%; height: 8px; top: -7px; background-repeat: repeat-x; background-size: 22px 8px; animation: sw-wave 1.1s linear infinite }
+.switch .fill::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 8'%3E%3Cpath d='M0 5 Q5.5 0 11 5 T22 5 V8 H0z' fill='%234FC3D6'/%3E%3C/svg%3E") }
+.switch .fill::after { top: -5px; opacity: .55; animation-duration: 1.7s; animation-direction: reverse; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 8'%3E%3Cpath d='M0 5 Q5.5 1 11 5 T22 5 V8 H0z' fill='%23A6E6EE'/%3E%3C/svg%3E") }
+@keyframes sw-wave { to { transform: translateX(-22px) } }
+.switch .bub { position: absolute; z-index: 1; bottom: -4px; width: 4px; height: 4px; border-radius: 50%; border: 1px solid rgba(255,255,255,.85); opacity: 0; pointer-events: none }
+.switch[aria-checked="true"] .bub { animation: sw-bub 2.4s ease-in infinite }
+.switch .bub:nth-of-type(1) { left: 10px } .switch .bub:nth-of-type(2) { left: 21px; animation-delay: .8s !important; width: 3px; height: 3px } .switch .bub:nth-of-type(3) { left: 31px; animation-delay: 1.5s !important }
+@keyframes sw-bub { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: .9 } 100% { transform: translateY(-34px); opacity: 0 } }
+.switch[aria-checked="true"] .fill { transform: translateY(0); animation: sw-slosh .9s ease-out }
+@keyframes sw-slosh { 0% { border-radius: 0 } 40% { border-radius: 40% 60% 0 0 / 30% 30% 0 0 } 100% { border-radius: 0 } }
+.switch .thumb { box-shadow: 0 2px 6px rgba(6,50,62,.25), inset 0 -2px 3px rgba(11,71,87,.08) }
+.switch[aria-checked="true"] .thumb { color: #1F9D8B }
+
+/* ---------- main buttons: water rises inside on hover, and a ripple on press ---------- */
+.go { position: relative; isolation: isolate; transition: transform .2s, box-shadow .3s }
+.go::before { content: ""; position: absolute; z-index: -1; left: -10%; right: -10%; bottom: 0; height: 0%; border-radius: 45% 55% 0 0 / 14px 14px 0 0;
+  background: rgba(79,195,214,.35); transition: height .55s cubic-bezier(.3,1.3,.5,1) }
+.go:hover:not(:disabled)::before { height: 46%; animation: go-slosh 1.6s ease-in-out infinite }
+@keyframes go-slosh { 50% { border-radius: 55% 45% 0 0 / 10px 18px 0 0 } }
+.go:active:not(:disabled) { box-shadow: 0 0 0 6px rgba(79,195,214,.25) }
+.go.red::before, .dock-go.red::before { background: rgba(255,255,255,.22) }
+
+.dock-alt.with-ico { display: inline-flex; align-items: center; gap: 6px }
+.dock-alt.with-ico svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round }
+@media (max-width: 520px) { .dock-alt.with-ico { flex-direction: column; gap: 2px; padding: 7px 9px; font-size: 10.5px } .dock-alt.with-ico svg { width: 17px; height: 17px } }
+.menu-btn { pointer-events: auto; display: inline-flex; align-items: center; gap: 4px; margin-left: auto; margin-right: 8px; padding: 7px 12px 7px 8px; border: 0; border-radius: 999px;
+  background: rgba(255,255,255,.55); color: var(--water); font: 600 12.5px var(--body); cursor: pointer; box-shadow: 0 6px 14px -8px rgba(0,70,90,.6); backdrop-filter: blur(10px) }
+.menu-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round }
+.menu-btn:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 2px }
+@media (prefers-reduced-motion: reduce) { .switch .fill::before, .switch .fill::after, .switch .bub, .go::before { animation: none !important } }
+
+/* ---------- the switch, take two: ink fills it like water; drops splash out on hover and on flip ---------- */
+.switch .fill { background: linear-gradient(180deg, #2E3338 0%, #111315 100%) }
+.switch .fill::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 8'%3E%3Cpath d='M0 5 Q5.5 0 11 5 T22 5 V8 H0z' fill='%232E3338'/%3E%3C/svg%3E") }
+.switch .fill::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 8'%3E%3Cpath d='M0 5 Q5.5 1 11 5 T22 5 V8 H0z' fill='%236B737B'/%3E%3C/svg%3E") }
+.switch .bub { border-color: rgba(127,211,227,.9) }
+.switch[aria-checked="true"] .thumb, .switch[aria-checked="true"] .thumb svg { color: var(--ink) }
+.swrap { position: relative; display: inline-flex; flex: none; --x: 17px }
+.swrap[data-on="true"] { --x: 45px }
+.hsplash, .splash { position: absolute; left: 0; top: 0; width: 62px; height: 34px; pointer-events: none; z-index: 3 }
+.hsplash i, .splash i { position: absolute; left: var(--x); top: 9px; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle at 34% 30%, #FFFFFF 0 14%, #3FC0D6 30%, #0E8BA3 70%, #075466 100%); box-shadow: 0 2px 4px rgba(0,50,64,.4) }
+.hsplash i { width: 6px; height: 6px; margin: -3px }
+.swrap:hover .hsplash i { animation: s-hdrop .6s cubic-bezier(.2,.8,.3,1) both }
+@keyframes s-hdrop { 0% { opacity: 0; transform: translate(0,0) scale(.4) } 25% { opacity: 1 } 60% { transform: translate(calc(var(--dx) * .8), var(--dy)) scale(1) } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 10px)) scale(.7) } }
+.splash i { animation: s-drop .85s cubic-bezier(.15,.75,.35,1) both }
+@keyframes s-drop { 0% { opacity: 0; transform: translate(0,0) scale(.3) } 12% { opacity: 1 } 55% { opacity: 1; transform: translate(calc(var(--dx) * .75), var(--dy)) scale(1) } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 26px)) scale(.6) } }
+.splash b { position: absolute; left: var(--x); top: 17px; width: 30px; height: 30px; margin: -15px; border-radius: 50%; border: 2.5px solid rgba(20,149,174,.85); animation: s-ring .65s ease-out both }
+@keyframes s-ring { from { transform: scale(.5); opacity: 1 } to { transform: scale(1.9); opacity: 0 } }
+.swrap[data-on="false"] .splash b { border-color: rgba(21,23,26,.35) }
+@media (prefers-reduced-motion: reduce) { .hsplash, .splash { display: none } }
+
+/* the hover sheen on cards lights the card, not the controls on it */
+.card > :not([aria-hidden]) { position: relative; z-index: 1 }
+/* proximity glass on the ink switch: a soft shine, not a white wash */
+.switch.morph .lens { background: radial-gradient(70px circle at var(--mx) var(--my), rgba(255,255,255,.32), rgba(255,255,255,0) 60%); mix-blend-mode: screen;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 10px 24px -12px rgba(11,71,87,.6) }
+/* ---------- pack icons ---------- */
+.pi { width: 16px; height: 16px; flex: none; stroke-width: 1.8 }
+.lib { gap: 7px }
+.lib .pi { opacity: .85 }
+.lib.dice .pi { width: 17px; height: 17px }
+.pack-name { display: flex; align-items: center; gap: 8px }
+.pack-name .pi { width: 19px; height: 19px; color: var(--water) }
+.with-pi { display: inline-flex !important; align-items: center; gap: 7px }
+.chip .pi { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px }
+
+/* ---------- the switch, take three: ink-black water inside it. Hover makes it rise and slosh; flipping it surges in or drains out ---------- */
+.hsplash, .splash, .switch .bub { display: none !important }
+.switch .fill { transition: transform .5s cubic-bezier(.34,1.3,.5,1) }
+.switch .fill::before, .switch .fill::after { transform-origin: 50% 100%; transition: height .3s }
+.switch[aria-checked="false"]:hover .fill { transform: translateY(64%) }
+.switch[aria-checked="false"]:hover .fill::before { animation: sw-wave .7s linear infinite, sw-chop .9s ease-in-out infinite }
+.switch:hover .fill::before { animation: sw-wave .7s linear infinite, sw-chop .9s ease-in-out infinite }
+.switch:hover .fill::after { animation: sw-wave 1s linear infinite reverse, sw-chop 1.2s ease-in-out infinite reverse }
+@keyframes sw-chop { 0%, 100% { scale: 1 1 } 50% { scale: 1 2.1 } }
+.switch .fill.surge { animation: sw-surge .95s cubic-bezier(.3,.9,.4,1) backwards }
+.switch .fill.surge::before, .switch .fill.surge::after { animation: sw-wave .5s linear infinite, sw-crest .95s ease-out both }
+@keyframes sw-surge { 0% { transform: translateY(112%) } 45% { transform: translateY(-14%) } 70% { transform: translateY(6%) } 100% { transform: translateY(0) } }
+@keyframes sw-crest { 0% { scale: 1 3.2 } 60% { scale: 1 1.8 } 100% { scale: 1 1 } }
+.switch .fill.drain { animation: sw-drain .8s cubic-bezier(.5,0,.6,1) backwards }
+.switch .fill.drain::before, .switch .fill.drain::after { animation: sw-wave .45s linear infinite, sw-crest .8s ease-out both }
+@keyframes sw-drain { 0% { transform: translateY(0) } 25% { transform: translateY(-10%) } 100% { transform: translateY(112%) } }
+.switch:hover:not([aria-checked="true"]) .off { color: #5B6168 }
+@media (prefers-reduced-motion: reduce) { .switch .fill.surge, .switch .fill.drain { animation: none } }
+@media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
+</style>
+</head>
+<body>
+
+<div id="root"><p class="boot">Loading…</p></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.0.17/dist/index.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.4/babel.min.js"></script>
+
+<script type="text/plain" id="app-src">
+"use client";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type PointerEvent as RPointerEvent } from "react";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type AnimationPlaybackControls, type MotionValue } from "framer-motion";
+import { useMemo } from "react";
+import { gsap } from "gsap";
+
+/* =====================================================================================
+   AquariumPrompt: the component as given. Two style changes only: the prompt box and the
+   sent bubble are solid white instead of frosted glass. Motion and behaviour are unchanged.
+   ===================================================================================== */
+const ICON = {
+  arrow_up: "<path fill=\"currentColor\" d=\"M27.988 50.137c1.22 0 2.11-.844 2.11-2.063V17.207l-.188-4.992l7.008 7.687l5.344 5.25c.375.375.937.563 1.476.563c1.172 0 2.04-.89 2.04-2.04c0-.562-.212-1.054-.657-1.523L29.56 6.566c-.446-.468-.985-.703-1.57-.703c-.563 0-1.102.235-1.548.703L10.88 22.152c-.445.47-.656.961-.656 1.524c0 1.148.867 2.039 2.015 2.039c.563 0 1.125-.188 1.5-.563l5.32-5.25l7.032-7.71l-.188 5.015v30.867c0 1.219.867 2.063 2.086 2.063\"/>",
+} as const;
+type AquariumPromptProps = { bare?: boolean; title?: string; placeholder?: string; onSubmit?: (text: string) => void; fish?: number; autoplay?: boolean; className?: string; suggestions?: string[]; hint?: string };
+const PX = 4;
+const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => v / 16 - 0.5);
+type RGB = [number, number, number];
+type Species = { body: RGB; belly: RGB; fin: RGB; stripe?: RGB; len: number; tall: number; school: number; speed: number };
+const SPECIES: Species[] = [
+  { body: [255, 128, 34], belly: [255, 170, 80], fin: [214, 82, 16], stripe: [255, 255, 255], len: 13, tall: 0.5, school: 3, speed: 1 },
+  { body: [36, 92, 220], belly: [70, 140, 240], fin: [255, 214, 40], len: 14, tall: 0.55, school: 4, speed: 1.05 },
+  { body: [255, 214, 32], belly: [255, 236, 110], fin: [240, 180, 0], len: 10, tall: 0.62, school: 4, speed: 1.1 },
+  { body: [170, 206, 228], belly: [222, 240, 250], fin: [120, 160, 190], len: 7, tall: 0.38, school: 10, speed: 1.35 },
+];
+type Fish = { x: number; y: number; vx: number; vy: number; s: number; size: number; phase: number; dart: number; gone: number };
+type Bubble = { x: number; y: number; r: number; v: number; wob: number; grow?: number };
+type Pop = { x: number; y: number; t0: number };
+type Ripple = { x: number; y: number; t0: number };
+function spawnFish(n: number, W: number, H: number): Fish[] {
+  const out: Fish[] = []; let s = 0;
+  while (out.length < n) {
+    const sp = SPECIES[s % SPECIES.length];
+    const cx = 40 + Math.random() * (W - 80); const cy = 40 + Math.random() * (H - 90); const dir = Math.random() < 0.5 ? -1 : 1;
+    for (let k = 0; k < sp.school && out.length < n; k++)
+      out.push({ x: cx + (Math.random() - 0.5) * 60, y: cy + (Math.random() - 0.5) * 40, vx: dir * (0.6 + Math.random() * 0.5), vy: (Math.random() - 0.5) * 0.3, s: s % SPECIES.length, size: 0.85 + Math.random() * 0.3, phase: Math.random() * 6.28, dart: 0, gone: 0 });
+    s++;
+  }
+  return out;
+}
+function paintFish(buf: Uint8ClampedArray, w: number, h: number, f: Fish, t: number) {
+  const sp = SPECIES[f.s]; const L = sp.len * f.size; const T = L * sp.tall; const cx = f.x / PX; const cy = f.y / PX;
+  const facing = f.vx >= 0 ? 1 : -1; const tilt = clamp(Math.atan2(f.vy, Math.abs(f.vx) + 0.001), -0.6, 0.6) * facing;
+  const ca = Math.cos(-tilt); const sa = Math.sin(-tilt); const wag = Math.sin(f.phase) * 0.35; const R = Math.ceil(L * 0.75); const alpha = 1 - f.gone;
+  if (alpha <= 0.02) return;
+  for (let py = Math.floor(cy - R); py <= cy + R; py++) {
+    if (py < 0 || py >= h) continue;
+    for (let px = Math.floor(cx - R); px <= cx + R; px++) {
+      if (px < 0 || px >= w) continue;
+      const dx = (px + 0.5 - cx) * facing; const dy = py + 0.5 - cy; const u = dx * ca - dy * sa * facing; const v = dx * sa * facing + dy * ca;
+      let col: RGB | null = null; const bu = u / (L * 0.5); const bv = v / (T * 0.5);
+      if (bu * bu + bv * bv <= 1) {
+        col = v > T * 0.12 ? sp.belly : v < -T * 0.22 ? sp.fin : sp.body;
+        if (sp.stripe && (Math.abs(u - L * 0.12) < 0.9 || Math.abs(u + L * 0.18) < 0.8)) col = sp.stripe;
+        if (Math.abs(u - L * 0.3) < 0.75 && Math.abs(v + T * 0.08) < 0.75) col = [18, 22, 30];
+      } else {
+        const tu = -u - L * 0.42; const tv = v - wag * tu;
+        if (tu > 0 && tu < L * 0.32 && Math.abs(tv) < tu * 0.95 + 0.4) col = sp.fin;
+        else if (u > -L * 0.15 && u < L * 0.15 && v < -T * 0.45 && v > -T * 0.45 - (L * 0.15 - Math.abs(u)) * 0.9) col = sp.fin;
+      }
+      if (!col) continue;
+      const i = (py * w + px) * 4;
+      buf[i] = buf[i] + (col[0] - buf[i]) * alpha; buf[i + 1] = buf[i + 1] + (col[1] - buf[i + 1]) * alpha; buf[i + 2] = buf[i + 2] + (col[2] - buf[i + 2]) * alpha;
+    }
+  }
+  void t;
+}
+const STOP = Symbol("stop");
+function AquariumPrompt({ bare = false, title = "What's on your mind?", placeholder = "Ask anything", onSubmit, fish: fishCount = 26, autoplay = false, className = "", suggestions = [], hint = "Move through the water, or tap it." }: AquariumPromptProps) {
+  const reduced = !!useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null); const canvasRef = useRef<HTMLCanvasElement>(null); const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null); const sendRef = useRef<HTMLButtonElement>(null);
+  const [text, setText] = useState(""); const [sent, setSent] = useState<{ id: number; text: string } | null>(null);
+  const inView = useInView(rootRef, { amount: 0.15 }); const inViewRef = useRef(inView); inViewRef.current = inView;
+  const labelId = useId();
+  const world = useRef({ fish: [] as Fish[], bubbles: [] as Bubble[], ripples: [] as Ripple[], pops: [] as Pop[], vents: [] as { x: number; next: number }[], ptr: { x: -999, y: -999, on: false, t: 0 }, caret: { x: 0, y: 0, t: -99 }, gulp: { x: 0, y: 0, t: -99 }, W: 0, H: 0 });
+  const caretAt = useCallback(() => {
+    const inp = inputRef.current; const root = rootRef.current; if (!inp || !root) return null;
+    const ctx = document.createElement("canvas").getContext("2d")!; const cs = getComputedStyle(inp);
+    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const before = inp.value.slice(0, inp.selectionStart ?? inp.value.length); const r = inp.getBoundingClientRect(); const b = root.getBoundingClientRect();
+    const x = r.left - b.left + parseFloat(cs.paddingLeft) + Math.min(ctx.measureText(before).width - inp.scrollLeft, r.width - 20);
+    return { x, y: r.top - b.top + r.height / 2 };
+  }, []);
+  const typed = useCallback(() => {
+    const c = caretAt(); if (!c) return; const w = world.current;
+    w.caret = { x: c.x, y: c.y, t: performance.now() };
+    w.bubbles.push({ x: c.x + (Math.random() - 0.5) * 6, y: c.y - 10, r: 1 + Math.round(Math.random()), v: 0.5 + Math.random() * 0.4, wob: Math.random() * 6 });
+  }, [caretAt]);
+  useEffect(() => {
+    const cv = canvasRef.current; const root = rootRef.current; if (!cv || !root) return;
+    const ctx = cv.getContext("2d")!; const low = document.createElement("canvas"); const lctx = low.getContext("2d", { willReadFrequently: true })!;
+    let img: ImageData | null = null; const w = world.current;
+    const size = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1); w.W = root.clientWidth; w.H = root.clientHeight;
+      cv.width = Math.round(w.W * dpr); cv.height = Math.round(w.H * dpr); low.width = Math.ceil(w.W / PX); low.height = Math.ceil(w.H / PX);
+      if (!low.width || !low.height) { img = null; return; } img = lctx.createImageData(low.width, low.height); if (!w.fish.length) w.fish = spawnFish(fishCount, w.W, w.H);
+
+    };
+    size(); const ro = new ResizeObserver(size); ro.observe(root);
+    let raf = 0; let last = performance.now(); const t0 = last;
+    const step = (dt: number, now: number) => {
+      const { fish, ptr, caret, gulp, W, H } = w; const typing = now - caret.t < 1600; const gulping = now - gulp.t < 1400; const k = dt * 60;
+      for (let i = 0; i < fish.length; i++) {
+        const f = fish[i]; const sp = SPECIES[f.s]; let ax = 0; let ay = 0; let cx = 0; let cy = 0; let avx = 0; let avy = 0; let n = 0;
+        for (let j = 0; j < fish.length; j++) {
+          if (i === j) continue; const o = fish[j]; const dx = o.x - f.x; const dy = o.y - f.y; const d2 = dx * dx + dy * dy;
+          const minD = (sp.len + SPECIES[o.s].len) * PX * 0.56;
+          if (d2 < minD * minD && d2 > 0.01) { const d = Math.sqrt(d2); ax -= (dx / d) * (minD - d) * 0.012; ay -= (dy / d) * (minD - d) * 0.012; }
+          if (o.s === f.s && d2 < 70 * 70) { cx += o.x; cy += o.y; avx += o.vx; avy += o.vy; n++; }
+        }
+        if (n) { ax += (cx / n - f.x) * 0.0005 + (avx / n - f.vx) * 0.022; ay += (cy / n - f.y) * 0.0005 + (avy / n - f.vy) * 0.022; }
+        const ts = now / 1000; const hx = W * (0.5 + 0.38 * Math.sin(ts * 0.07 + f.s * 1.9)); const hy = H * (0.46 + 0.28 * Math.cos(ts * 0.09 + f.s * 2.7));
+        ax += (hx - f.x) * 0.00035; ay += (hy - f.y) * 0.00035;
+        f.phase += (0.18 + Math.hypot(f.vx, f.vy) * 0.12) * k;
+        ax += Math.sin(now * 0.0007 + i * 1.7) * 0.012; ay += Math.cos(now * 0.0009 + i * 2.3) * 0.008;
+        const m = 36;
+        if (f.x < m) ax += (m - f.x) * 0.006; if (f.x > W - m) ax -= (f.x - (W - m)) * 0.006;
+        if (f.y < m) ay += (m - f.y) * 0.006; if (f.y > H - m - 30) ay -= (f.y - (H - m - 30)) * 0.008;
+        if (ptr.on && !gulping) { const dx = f.x - ptr.x; const dy = f.y - ptr.y; const d = Math.hypot(dx, dy); if (d < 110 && d > 0.1) { const p = (110 - d) / 110; ax += (dx / d) * p * 0.6; ay += (dy / d) * p * 0.6; f.dart = Math.max(f.dart, p); } }
+        for (const r of w.ripples) { const age = (now - r.t0) / 1000; if (age > 0.6) continue; const dx = f.x - r.x; const dy = f.y - r.y; const d = Math.hypot(dx, dy) || 1; if (d < 160) { ax += (dx / d) * 0.5 * (1 - d / 160); ay += (dy / d) * 0.5 * (1 - d / 160); f.dart = 1; } }
+        if (typing && !gulping) { const dx = caret.x - f.x; const dy = caret.y - f.y; const d = Math.hypot(dx, dy) || 1; const want = 46 + (i % 5) * 9; const pull = (d - want) * 0.0016 * (1 - (now - caret.t) / 1600); ax += (dx / d) * pull; ay += (dy / d) * pull; }
+        if (gulping) { const dx = gulp.x - f.x; const dy = gulp.y - f.y; const d = Math.hypot(dx, dy) || 1; ax += (dx / d) * 0.32; ay += (dy / d) * 0.32; if (d < 26) f.gone = Math.min(1, f.gone + 0.12 * k); }
+        else if (f.gone > 0) { f.gone = Math.max(0, f.gone - 0.03 * k); if (f.gone > 0.9) { f.x = Math.random() < 0.5 ? -20 : W + 20; f.y = 40 + Math.random() * (H - 120); f.vx = f.x < 0 ? 1 : -1; } }
+        f.dart = Math.max(0, f.dart - 0.02 * k);
+        const maxV = (reduced ? 0.6 : 1.25) * sp.speed * (1 + f.dart * 2.2 + (gulping ? 1.6 : 0));
+        f.vx += ax * k; f.vy += ay * k;
+        const v = Math.hypot(f.vx, f.vy); const minV = 0.35 * sp.speed;
+        if (v > maxV) { f.vx *= maxV / v; f.vy *= maxV / v; } else if (v < minV) { f.vx *= minV / Math.max(v, 0.01); f.vy *= minV / Math.max(v, 0.01); }
+        f.vy *= 0.985; f.x += f.vx * k; f.y += f.vy * k;
+      }
+      // the only other bubbles in the tank come from the visitors breathing (drawn by CrowdCanvas)
+      // bubbles rise, wobble, speed up and swell a little as they climb, then pop at the surface
+      w.bubbles = w.bubbles.filter((b) => {
+        b.y -= b.v * k; b.wob += 0.08 * k; b.v = Math.min(1.6, b.v + 0.004 * k);
+        if (b.grow) b.r = Math.min(3.2, b.r + b.grow * k);
+        if (b.y < 10) { w.pops.push({ x: b.x + Math.sin(b.wob) * 3, y: 8, t0: now }); return false; }
+        return true;
+      });
+      w.pops = w.pops.filter((p) => now - p.t0 < 260);
+      w.ripples = w.ripples.filter((r) => now - r.t0 < 1200);
+    };
+    const draw = (now: number) => {
+      if (!img) return; const lw = low.width; const lh = low.height; const d = img.data; const t = (now - t0) / 1000;
+      for (let y = 0; y < lh; y++) {
+        const gy = y / lh;
+        for (let x = 0; x < lw; x++) {
+          const i = (y * lw + x) * 4;
+          const c1 = Math.sin(x * 0.21 + t * 0.9 + Math.sin(y * 0.17 + t * 0.6) * 1.6) + Math.sin(y * 0.19 - t * 0.7 + Math.sin(x * 0.13 - t * 0.5) * 1.4);
+          const caustic = c1 > 1.25 ? (reduced ? 0.6 : 1) * (1 - gy * 0.7) : 0;
+          const rays = Math.max(0, Math.sin((x - y * 0.55) * 0.09 + t * 0.15)) ** 6 * (1 - gy) * 0.5;
+          const dither = BAYER[(y & 3) * 4 + (x & 3)] * 0.09; const g = clamp(gy + dither); const level = Math.round(g * 6) / 6;
+          let r = 168 - 120 * level; let gg = 236 - 62 * level; let b = 242 - 46 * level; const glow = caustic * 0.22 + rays * 0.35;
+          r += (255 - r) * glow; gg += (255 - gg) * glow; b += (255 - b) * glow;
+          d[i] = r; d[i + 1] = gg; d[i + 2] = b; d[i + 3] = 255;
+        }
+      }
+      const sandTop = lh - 6;
+      for (let y = sandTop; y < lh; y++) for (let x = 0; x < lw; x++) {
+        const i = (y * lw + x) * 4; const bump = Math.sin(x * 0.3) * 0.8 + Math.sin(x * 0.11) * 1.4;
+        if (y < sandTop + 2 + bump) continue;
+        const shade = ((x * 7 + y * 13) % 5 === 0 ? 18 : 0) + (y - sandTop) * 3;
+        d[i] = 236 - shade; d[i + 1] = 214 - shade; d[i + 2] = 170 - shade;
+      }
+      for (let s = 0; s < lw; s += 11) {
+        const base = s + ((s * 7) % 5); const tall = 8 + ((s * 13) % 9);
+        for (let k = 0; k < tall; k++) {
+          const x = Math.round(base + Math.sin(t * 1.3 + s + k * 0.35) * (k * 0.12)); const y = sandTop - k + 2;
+          if (x < 0 || x >= lw || y < 0) continue;
+          const i = (y * lw + x) * 4; const dark = k % 3 === 0;
+          d[i] = dark ? 34 : 52; d[i + 1] = dark ? 130 : 160; d[i + 2] = dark ? 96 : 110;
+        }
+      }
+      for (const b of w.bubbles) {
+        const bx = Math.round((b.x + Math.sin(b.wob) * 3) / PX); const by = Math.round(b.y / PX); const br = Math.max(1, Math.round(b.r));
+        for (let yy = -br; yy <= br; yy++) for (let xx = -br; xx <= br; xx++) {
+          const x = bx + xx; const y = by + yy; if (x < 0 || y < 0 || x >= lw || y >= lh) continue;
+          const r2 = xx * xx + yy * yy; if (r2 > br * br + 0.5) continue;
+          // a bright rim, a faint body and one highlight pixel near the top
+          const hl = xx === -Math.floor(br / 2) && yy === -Math.floor(br / 2) && br > 1;
+          const i = (y * lw + x) * 4; const rim = r2 >= br * br - 0.5 || br === 1; const k = hl ? 0.95 : rim ? 0.75 : 0.18;
+          d[i] += (255 - d[i]) * k; d[i + 1] += (255 - d[i + 1]) * k; d[i + 2] += (255 - d[i + 2]) * k;
+        }
+      }
+      for (const p of w.pops) {
+        const a = 1 - (now - p.t0) / 260; const cx = Math.round(p.x / PX); const cy = Math.round(p.y / PX);
+        for (const [ox, oy] of [[-2, 0], [2, 0], [0, -1], [-1, -1], [1, -1], [-2, -1], [2, -1]]) {
+          const x = cx + ox; const y = cy + oy; if (x < 0 || y < 0 || x >= lw || y >= lh) continue;
+          const i = (y * lw + x) * 4; d[i] += (255 - d[i]) * a * 0.8; d[i + 1] += (255 - d[i + 1]) * a * 0.8; d[i + 2] += (255 - d[i + 2]) * a * 0.8;
+        }
+      }
+      for (const r of w.ripples) {
+        const age = (now - r.t0) / 1000; const rad = (age * 140) / PX; const a = 0.6 * (1 - age / 1.2); const cx = r.x / PX; const cy = r.y / PX; const steps = Math.max(12, Math.round(rad * 6));
+        for (let s = 0; s < steps; s++) {
+          const ang = (s / steps) * Math.PI * 2; const x = Math.round(cx + Math.cos(ang) * rad); const y = Math.round(cy + Math.sin(ang) * rad * 0.8);
+          if (x < 0 || y < 0 || x >= lw || y >= lh) continue;
+          const i = (y * lw + x) * 4; d[i] += (255 - d[i]) * a; d[i + 1] += (255 - d[i + 1]) * a; d[i + 2] += (255 - d[i + 2]) * a;
+        }
+      }
+      for (const f of w.fish) paintFish(d, lw, lh, f, t);
+      lctx.putImageData(img, 0, 0); ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(low, 0, 0, lw * PX * (cv.width / w.W), lh * PX * (cv.height / w.H));
+    };
+    const frame = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (inViewRef.current && !document.hidden) { step(dt, now); draw(now); }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, [fishCount, reduced]);
+  const local = (e: { clientX: number; clientY: number }) => { const b = rootRef.current!.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; };
+  const onMove = (e: RPointerEvent<HTMLDivElement>) => { const p = local(e); Object.assign(world.current.ptr, { x: p.x, y: p.y, on: true, t: performance.now() }); };
+  const onLeave = () => { world.current.ptr.on = false; };
+  const onWaterDown = (e: RPointerEvent<HTMLDivElement>) => { if (formRef.current?.contains(e.target as Node)) return; const p = local(e); world.current.ripples.push({ x: p.x, y: p.y, t0: performance.now() }); };
+  const send = (e?: FormEvent) => {
+    e?.preventDefault(); const v = text.trim(); if (!v) return;
+    const b = rootRef.current!.getBoundingClientRect(); const r = (sendRef.current ?? inputRef.current)!.getBoundingClientRect(); const fr = formRef.current!.getBoundingClientRect();
+    world.current.gulp = { x: (fr.left + fr.right) / 2 - b.left, y: r.top + r.height / 2 - b.top, t: performance.now() };
+    setSent({ id: Date.now(), text: v }); setText(""); onSubmit?.(v);
+  };
+  useEffect(() => { if (!sent) return; const t = setTimeout(() => setSent(null), 2200); return () => clearTimeout(t); }, [sent]);
+  const gx = useMotionValue(0); const gy = useMotionValue(0); const gs = useMotionValue(1); const go = useMotionValue(0);
+  useEffect(() => {
+    if (!autoplay || reduced) return; const root = rootRef.current; if (!root) return;
+    let alive = true; const running = new Set<AnimationPlaybackControls>();
+    const abort = () => { if (!alive) return; alive = false; running.forEach((c) => c.stop()); world.current.ptr.on = false; animate(go, 0, { duration: 0.2 }); };
+    const onTouch = (e: Event) => e.isTrusted && abort();
+    root.addEventListener("pointerdown", onTouch, true); root.addEventListener("keydown", onTouch, true);
+    const wait = (ms: number) => new Promise<void>((res, rej) => { let left = ms; let lastT = performance.now(); const tick = () => { if (!alive) return rej(STOP); const t = performance.now(); if (inViewRef.current) left -= t - lastT; lastT = t; if (left <= 0) res(); else setTimeout(tick, Math.min(60, Math.max(16, left))); }; tick(); });
+    const run = (mv: MotionValue<number>, target: number, duration: number, e: [number, number, number, number] = [0.4, 0, 0.2, 1]) => new Promise<void>((res, rej) => { if (!alive) return rej(STOP); if (Math.abs(mv.get() - target) < 0.01) return res(); const c = animate(mv, target, { duration, ease: e, onComplete: () => (running.delete(c), res()) }); running.add(c); });
+    const follow = () => Object.assign(world.current.ptr, { x: gx.get(), y: gy.get(), on: go.get() > 0.5, t: performance.now() });
+    const offs = [gx.on("change", follow), gy.on("change", follow)];
+    const PROMPTS = ["Plan a slow weekend in Lisbon", "Name my new coffee shop", "Explain tides like I'm five"];
+    (async () => {
+      let n = 0;
+      while (alive) {
+        await wait(1000); const W = root.clientWidth; const H = root.clientHeight; gx.set(W * 0.12); gy.set(H * 0.75); await run(go, 1, 0.3);
+        await Promise.all([run(gx, W * 0.42, 1.3, [0.45, 0, 0.55, 1]), run(gy, H * 0.82, 1.3)]);
+        await Promise.all([run(gx, W * 0.8, 1.2, [0.45, 0, 0.55, 1]), run(gy, H * 0.3, 1.2)]);
+        await run(gs, 0.8, 0.08); world.current.ripples.push({ x: gx.get(), y: gy.get(), t0: performance.now() }); await run(gs, 1, 0.14); await wait(700);
+        const ir = inputRef.current!.getBoundingClientRect(); const b = root.getBoundingClientRect();
+        await Promise.all([run(gx, ir.left - b.left + 40, 0.6), run(gy, ir.top - b.top + ir.height / 2, 0.6)]);
+        await run(gs, 0.8, 0.08); await run(gs, 1, 0.12); await run(go, 0, 0.25);
+        const p = PROMPTS[n++ % PROMPTS.length];
+        for (let i = 1; i <= p.length; i++) { await wait(62 + Math.random() * 50); setText(p.slice(0, i)); }
+        await wait(900); const sr = sendRef.current!.getBoundingClientRect();
+        gx.set(sr.left - b.left + sr.width / 2 + 30); gy.set(sr.top - b.top + sr.height / 2 + 30); await run(go, 1, 0.2);
+        await Promise.all([run(gx, sr.left - b.left + sr.width / 2, 0.4), run(gy, sr.top - b.top + sr.height / 2, 0.4)]);
+        await run(gs, 0.8, 0.08); sendRef.current?.click(); await run(gs, 1, 0.12); await run(go, 0, 0.3); await wait(3200);
+      }
+    })().catch((e) => e !== STOP && console.error(e));
+    return () => { abort(); offs.forEach((o) => o()); root.removeEventListener("pointerdown", onTouch, true); root.removeEventListener("keydown", onTouch, true); };
+  }, [autoplay, reduced]);
+  useEffect(() => { if (text) requestAnimationFrame(typed); }, [text, typed]);
+  return (
+    <div ref={rootRef} onPointerMove={onMove} onPointerLeave={onLeave} onPointerDown={onWaterDown}
+      className={`relative h-full w-full select-none overflow-hidden bg-[#7fd3e3] ${className}`}>
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full [image-rendering:pixelated]" />
+      {!bare && <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] flex flex-col items-center px-5 pt-[clamp(72px,13vh,180px)]">
+        <h3 id={labelId} className="m-0 text-center text-[clamp(26px,4.4vw,40px)] font-light tracking-[-0.03em] text-[#0b4757] [text-shadow:0_1px_0_rgba(255,255,255,.35)]">{title}</h3>
+        <form ref={formRef} onSubmit={send}
+          className="pointer-events-auto relative mt-6 flex w-full max-w-[520px] items-center gap-2 rounded-[22px] bg-white p-2 pl-5 shadow-[0_18px_40px_-20px_rgba(0,70,90,.55)]">
+          <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} onClick={typed} placeholder={placeholder} aria-labelledby={labelId}
+            className="h-11 min-w-0 flex-1 bg-transparent text-[16px] text-[#06303b] outline-none placeholder:text-[#2c6878]/70" />
+          <motion.button ref={sendRef} type="submit" disabled={!text.trim()} aria-label="Send" whileTap={{ scale: 0.9 }}
+            animate={{ backgroundColor: text.trim() ? "#0b4757" : "rgba(11,71,87,.25)" }}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b4757]">
+            <svg viewBox="0 0 56 56" width={17} height={17} aria-hidden="true" dangerouslySetInnerHTML={{ __html: ICON.arrow_up }} />
+          </motion.button>
+          <AnimatePresence>
+            {sent && (
+              <motion.div key={sent.id} aria-live="polite" initial={{ y: 0, opacity: 0, scale: 0.6 }}
+                animate={{ y: -150, opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 1.15] }}
+                transition={{ duration: 2.1, ease: [0.3, 0.1, 0.4, 1], opacity: { times: [0, 0.12, 0.8, 1], duration: 2.1 } }}
+                style={{ x: "-50%" }}
+                className="pointer-events-none absolute left-1/2 top-0 max-w-[80%] truncate rounded-full bg-white px-4 py-1.5 text-[14px] text-[#06303b] shadow-[0_8px_20px_-10px_rgba(0,70,90,.6)]">
+                {sent.text}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </form>
+        {suggestions.length > 0 && (
+          <div className="pointer-events-auto mt-4 flex max-w-[520px] flex-wrap justify-center gap-2">
+            {suggestions.map((sg, i) => (
+              <motion.button key={sg} type="button" className="rounded-full bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#0b4757] shadow-[0_6px_14px_-8px_rgba(0,70,90,.6)]"
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.06 }} whileHover={{ y: -2 }} whileTap={{ scale: 0.94 }}
+                onClick={() => { setText(sg === "Surprise me" ? SURPRISE_THEMES[Math.floor(Math.random() * SURPRISE_THEMES.length)] : sg); requestAnimationFrame(() => requestAnimationFrame(() => formRef.current?.requestSubmit())); }}>
+                {sg}
+              </motion.button>
+            ))}
+          </div>
+        )}
+        <p className="m-0 mt-3 max-w-[440px] text-center text-[12.5px] text-[#0b4757]/75">{hint}</p>
+      </div>}
+      <motion.span aria-hidden="true" style={{ x: gx, y: gy, scale: gs, opacity: go }}
+        className="pointer-events-none absolute left-0 top-0 z-30 -ml-[15px] -mt-[15px] h-[30px] w-[30px] rounded-full border-[1.5px] border-white/90 bg-[#0b4757]/20 shadow-[0_4px_14px_rgba(0,0,0,.18)]" />
+    </div>
+  );
+}
+
+/* =====================================================================================
+   CrowdCanvas: the component as given (gsap timeline walk, yoyo step, depth sort), polished:
+   - `pixelRatio` so a 2x sprite sheet draws at its normal size and stays sharp
+   - depth: people further back are smaller and slower, people in front bigger and faster
+   - nobody's cut-off bust bottom ever shows: every bottom edge stays below the stage edge
+   - a slight sway on each step, and a crowd size that fits the stage width
+   ===================================================================================== */
+interface CrowdCanvasProps { src: string; rows?: number; cols?: number; pixelRatio?: number; cheer?: boolean }
+const CrowdCanvas = ({ src, rows = 15, cols = 7, pixelRatio = 1, cheer = false }: CrowdCanvasProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cheerRef = useRef(cheer); cheerRef.current = cheer;
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d"); if (!ctx) return;
+    const config = { src, rows, cols };
+    const randomRange = (min: number, max: number) => min + Math.random() * (max - min);
+    const randomIndex = (array: any[]) => randomRange(0, array.length) | 0;
+    const removeFromArray = (array: any[], i: number) => array.splice(i, 1)[0];
+    const removeItemFromArray = (array: any[], item: any) => removeFromArray(array, array.indexOf(item));
+    const removeRandomFromArray = (array: any[]) => removeFromArray(array, randomIndex(array));
+    const getRandomFromArray = (array: any[]) => array[randomIndex(array) | 0];
+    const resetPeep = ({ stage, peep }: { stage: any; peep: any }) => {
+      const direction = Math.random() > 0.5 ? 1 : -1;
+      // depth 0 = back row, 1 = front row; most people stand somewhere in the middle
+      peep.depth = gsap.parseEase("power1.inOut")(Math.random());
+      peep.s = 0.72 + 0.4 * peep.depth;
+      peep.width = (peep.rect[2] / pixelRatio) * peep.s;
+      peep.height = (peep.rect[3] / pixelRatio) * peep.s;
+      // always at least 14px below the stage edge, deeper for the front row, so no flat bust bottom is ever visible
+      const offsetY = 14 + 70 * peep.depth;
+      const startY = stage.height - peep.height + offsetY;
+      let startX: number; let endX: number;
+      // x is always the left edge of the drawn figure, so both directions start and finish fully off-stage
+      if (direction === 1) { startX = -peep.width - 8; endX = stage.width + 8; peep.scaleX = 1; }
+      else { startX = stage.width + 8; endX = -peep.width - 8; peep.scaleX = -1; }
+      peep.x = startX; peep.y = startY; peep.anchorY = peep.depth; peep.baseY = startY;
+      return { startX, startY, endX };
+    };
+    const normalWalk = ({ peep, props }: { peep: any; props: any }) => {
+      // underwater: a slower, floatier step than on land
+      const { startX, startY, endX } = props; const xDuration = 10; const yDuration = 0.42;
+      // front-row walkers cross faster than the back row, which gives the crowd parallax
+      const tl = gsap.timeline(); tl.timeScale((0.55 + 0.75 * peep.depth) * randomRange(0.85, 1.15));
+      // an odd repeat count ends the yoyo back on the ground
+      const steps = (d: number) => ({ duration: yDuration, repeat: Math.max(1, Math.round(d / yDuration) | 1), yoyo: true, y: startY - 8, ease: "sine.inOut" });
+      peep.idle = false;
+      tl.to(peep, { duration: xDuration, x: endX, ease: "none" }, 0);
+      return tl;
+    };
+    const walks = [normalWalk];
+    type Peep = { image: HTMLImageElement; rect: number[]; width: number; height: number; drawArgs: any[]; x: number; y: number; anchorY: number; baseY: number; depth: number; s: number; idle: boolean; breath: number; scaleX: number; walk: any; setRect: (rect: number[]) => void; render: (ctx: CanvasRenderingContext2D) => void };
+    const createPeep = ({ image, rect }: { image: HTMLImageElement; rect: number[] }): Peep => {
+      const peep: Peep = {
+        image, rect: [], width: 0, height: 0, drawArgs: [], x: 0, y: 0, anchorY: 0, baseY: 0, depth: 0.5, s: 1, idle: false, breath: Math.random() * 6.28, scaleX: 1, walk: null,
+        setRect: (rect: number[]) => { peep.rect = rect; peep.width = rect[2] / pixelRatio; peep.height = rect[3] / pixelRatio; peep.drawArgs = [peep.image, ...rect, 0, 0, peep.width, peep.height]; },
+        render: (ctx: CanvasRenderingContext2D) => {
+          // underwater glide: a slow, continuous float and rock instead of hopping steps
+          const t = performance.now() / 1000;
+          const glide = peep.idle ? 0 : Math.sin(t * 2.2 + peep.breath * 2);
+          peep.y = peep.baseY - (glide * 0.5 + 0.5) * 3 * peep.s;
+          const sway = glide * 0.011;
+          // breathing: chest and shoulders rise and fall about every 3.5 seconds
+          const b = Math.sin(performance.now() / 560 + peep.breath) * 0.016;
+          (peep as any).b = b; (peep as any).sway = sway;
+          // when the crowd cheers, everyone hops
+          const hop = cheerRef.current ? (0.5 - 0.5 * Math.cos(performance.now() / 210 + peep.breath * 3)) * 13 * peep.s : 0;
+          ctx.save(); ctx.translate(peep.x + peep.width / 2, peep.y + peep.height - hop); ctx.rotate(sway * peep.scaleX);
+          ctx.scale(peep.scaleX * (1 - b * 0.35), 1 + b); ctx.translate(-peep.width / 2, -peep.height);
+          ctx.drawImage(peep.image, peep.rect[0], peep.rect[1], peep.rect[2], peep.rect[3], 0, 0, peep.width, peep.height);
+          ctx.restore();
+        },
+      };
+      peep.setRect(rect); return peep;
+    };
+    const img = document.createElement("img"); const stage = { width: 0, height: 0 };
+    // breath bubbles: every few seconds a visitor breathes out a couple of bubbles from their own mouth
+    // MOUTHS holds each sprite's measured mouth point, as a fraction of its cell (measured when the sheet was drawn)
+    const MOUTHS: number[][] = [[0.5587,0.371],[0.5592,0.3548],[0.5574,0.2903],[0.5717,0.3728],[0.5737,0.3599],[0.563,0.3708],[0.5591,0.3594],[0.5576,0.3497],[0.5574,0.358],[0.5592,0.3566],[0.7681,0.3599],[0.6283,0.3806],[0.5649,0.3903],[0.5526,0.3752],[0.5576,0.2906],[0.5589,0.3684],[0.5574,0.2903],[0.563,0.3708],[0.568,0.368],[0.5587,0.3533],[0.5615,0.3737],[0.5617,0.3792],[0.5526,0.3603],[0.5659,0.287],[0.5583,0.4029],[0.5598,0.3521],[0.5617,0.3792],[0.5587,0.3533],[0.5583,0.3806],[0.5587,0.3533],[0.5737,0.3599],[0.5649,0.3862],[0.5592,0.3566],[0.5592,0.3548],[0.563,0.3708],[0.5592,0.3566],[0.7529,0.3624],[0.6284,0.3624],[0.5649,0.3903],[0.5526,0.3752],[0.5574,0.358],[0.5593,0.3686],[0.563,0.3708],[0.5576,0.2906],[0.5572,0.3684],[0.5649,0.368],[0.5587,0.3533],[0.5617,0.3792],[0.5587,0.371],[0.5576,0.3497],[0.5514,0.3968],[0.5717,0.3728],[0.5723,0.3728],[0.5645,0.3749],[0.5587,0.371],[0.5514,0.3745],[0.5574,0.2903],[0.5526,0.3603],[0.5514,0.3745],[0.559,0.3594]];
+    type Bub = { peep: any; x: number; y: number; r: number; R: number; vx: number; vy: number; wob: number; at: number; free: boolean; popAt: number | null };
+    type PopFx = { x: number; y: number; r: number; t0: number };
+    let bubs: Bub[] = []; let pops: PopFx[] = []; let lastT = performance.now();
+    // where the mouth is right now, after the walk bob, breathing and step sway are applied
+    const mouthOf = (peep: any) => {
+      const m = MOUTHS[peep.idx] ?? [0.56, 0.36];
+      const w = peep.width; const h = peep.height; const sx = peep.scaleX * (1 - (peep.b ?? 0) * 0.35); const sy = 1 + (peep.b ?? 0); const a = (peep.sway ?? 0) * peep.scaleX;
+      const x0 = (m[0] * w - w / 2) * sx; const y0 = (m[1] * h - h) * sy;
+      return { x: peep.x + w / 2 + Math.cos(a) * x0 - Math.sin(a) * y0, y: peep.y + h + Math.sin(a) * x0 + Math.cos(a) * y0 };
+    };
+    const breathe = (peep: any, now: number) => {
+      if (peep.nextBreath === undefined) peep.nextBreath = now + Math.random() * 6000;
+      if (now < peep.nextBreath || peep.x < -peep.width * 0.3 || peep.x > stage.width - peep.width * 0.7) return;
+      // a calm breath every 4–8 seconds, and only a light trail of bubbles in the water at once
+      peep.nextBreath = now + 4000 + Math.random() * 4000;
+      if (bubs.length > 34) return;
+      const n = 1 + Math.floor(Math.random() * 2.6);
+      for (let i = 0; i < n; i++) {
+        const R = (3.6 + Math.random() * 4.2) * peep.s * (i === 0 ? 1.15 : 1);
+        // most bubbles burst on the way up; about a third make it all the way to the surface
+        bubs.push({ peep, x: 0, y: 0, r: R * 0.25, R, vx: 0, vy: 0, wob: Math.random() * 6, at: now + i * 230, free: false, popAt: Math.random() < 0.65 ? 140 + Math.random() * 260 : null });
+      }
+    };
+    // a real-looking bubble: see-through body, bright thin rim, a curved shine and a small glint opposite
+    const drawBubble = (b: Bub) => {
+      const r = b.r; const sx = 1 + 0.08 * Math.sin(b.wob * 1.7); const sy = 1 / sx;
+      ctx.save(); ctx.translate(b.x + Math.sin(b.wob) * 2.2, b.y); ctx.scale(sx, sy);
+      const g = ctx.createRadialGradient(-r * 0.25, -r * 0.3, r * 0.05, 0, 0, r);
+      g.addColorStop(0, "rgba(255,255,255,0.03)"); g.addColorStop(0.65, "rgba(190,240,255,0.08)"); g.addColorStop(0.9, "rgba(255,255,255,0.32)"); g.addColorStop(1, "rgba(255,255,255,0.7)");
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+      ctx.lineWidth = Math.max(0.7, r * 0.08); ctx.strokeStyle = "rgba(255,255,255,0.85)"; ctx.stroke();
+      // a faint darker inner edge on the lower side gives the bubble its roundness
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.86, 0.15 * Math.PI, 0.85 * Math.PI); ctx.lineWidth = Math.max(0.5, r * 0.06); ctx.strokeStyle = "rgba(11,71,87,0.18)"; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(-r * 0.36, -r * 0.4, r * 0.36, r * 0.16, -0.75, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.95)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(r * 0.42, r * 0.36, Math.max(0.6, r * 0.09), 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.fill();
+      ctx.restore();
+    };
+    const allPeeps: Peep[] = []; const availablePeeps: Peep[] = []; const crowd: Peep[] = [];
+    const createPeeps = () => {
+      const { rows, cols } = config; const { naturalWidth: width, naturalHeight: height } = img;
+      const total = rows * cols; const rectWidth = width / rows; const rectHeight = height / cols;
+      for (let i = 0; i < total; i++) { const pp: any = createPeep({ image: img, rect: [(i % rows) * rectWidth, ((i / rows) | 0) * rectHeight, rectWidth, rectHeight] }); pp.idx = i; allPeeps.push(pp); }
+    };
+    const initCrowd = () => { while (availablePeeps.length) addPeepToCrowd().walk.progress(Math.random()); };
+    const addPeepToCrowd = () => {
+      const peep = removeRandomFromArray(availablePeeps);
+      const walk = getRandomFromArray(walks)({ peep, props: resetPeep({ peep, stage }) }).eventCallback("onComplete", () => { removePeepFromCrowd(peep); addPeepToCrowd(); });
+      peep.walk = walk; crowd.push(peep); crowd.sort((a, b) => a.anchorY - b.anchorY); return peep;
+    };
+    const removePeepFromCrowd = (peep: Peep) => { removeItemFromArray(crowd, peep); availablePeeps.push(peep); };
+    const render = () => {
+      if (!canvas) return; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.save(); ctx.scale(devicePixelRatio, devicePixelRatio);
+      const now = performance.now(); const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+      crowd.forEach((peep) => { peep.render(ctx); breathe(peep, now); });
+      // they're under water: tint the crowd (only where people are drawn), a little more toward the back
+      ctx.globalCompositeOperation = "source-atop";
+      const g = ctx.createLinearGradient(0, stage.height - 360, 0, stage.height);
+      g.addColorStop(0, "rgba(64,172,196,.42)"); g.addColorStop(0.55, "rgba(64,172,196,.2)"); g.addColorStop(1, "rgba(11,71,87,.16)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, stage.width, stage.height);
+      ctx.globalCompositeOperation = "source-over";
+      // bubbles: born at the lips (following the mouth while they form), then let go, drift forward a touch and rise
+      const top = stage.height - (canvas.parentElement?.clientHeight ?? stage.height) + 14;
+      bubs = bubs.filter((b) => {
+        if (now < b.at) return true;
+        const age = now - b.at;
+        if (!b.free) {
+          const m = mouthOf(b.peep); b.x = m.x + b.peep.scaleX * b.r * 0.6; b.y = m.y - b.r * 0.4;
+          b.r = b.R * (0.25 + 0.75 * Math.min(1, age / 260));
+          if (age > 260) { b.free = true; b.vx = b.peep.scaleX * (10 + Math.random() * 8); b.vy = 22 + Math.random() * 12; if (b.popAt !== null) b.popAt = b.y - b.popAt; }
+        } else {
+          b.x += b.vx * dt; b.vx *= Math.pow(0.25, dt);
+          b.y -= b.vy * dt; b.vy = Math.min(85, b.vy + 22 * dt); b.wob += 3 * dt; b.r = Math.min(b.R * 1.6, b.r + 0.5 * dt);
+        }
+        if (b.y < top || (b.free && b.popAt !== null && b.y < b.popAt)) { pops.push({ x: b.x, y: b.y, r: b.r, t0: now }); return false; }
+        drawBubble(b); return true;
+      });
+      // popping: a quick ring and a couple of droplets
+      pops = pops.filter((p) => {
+        const k = (now - p.t0) / 200; if (k >= 1) return false;
+        ctx.globalAlpha = 1 - k; ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1 + k * 0.9), 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = "#fff"; for (const d of [-1, 1]) { ctx.beginPath(); ctx.arc(p.x + d * p.r * (1.2 + k * 1.4), p.y - p.r * k * 1.2, 0.9, 0, Math.PI * 2); ctx.fill(); }
+        ctx.globalAlpha = 1; return true;
+      });
+      ctx.restore();
+    };
+    const resize = () => {
+      if (!canvas) return; stage.width = canvas.clientWidth; stage.height = canvas.clientHeight;
+      canvas.width = stage.width * devicePixelRatio; canvas.height = stage.height * devicePixelRatio;
+      crowd.forEach((peep) => { peep.walk.kill(); }); crowd.length = 0; availablePeeps.length = 0;
+      // about one person per 26px of width keeps a phone from turning into a solid wall
+      const count = Math.max(12, Math.min(allPeeps.length, Math.round(stage.width / 26)));
+      availablePeeps.push(...[...allPeeps].sort(() => Math.random() - 0.5).slice(0, count)); initCrowd();
+    };
+    const init = () => { createPeeps(); resize(); gsap.ticker.add(render); };
+    img.onload = init; img.src = config.src;
+    const handleResize = () => resize(); window.addEventListener("resize", handleResize);
+    return () => { window.removeEventListener("resize", handleResize); gsap.ticker.remove(render); crowd.forEach((peep) => { if (peep.walk) peep.walk.kill(); }); };
+  }, []);
+  return <canvas ref={canvasRef} className="absolute bottom-0 h-[90vh] w-full" />;
+};
+
+/* =====================================================================================
+   The rest of the home screen
+   ===================================================================================== */
+const ease = [0.22, 1, 0.36, 1] as const;
+
+/** A card that rises in when it scrolls into view, tilts toward the pointer, and presses down when tapped. */
+function Card({ children, className = "", delay = 0, tilt = true, as = "section" }: { children: any; className?: string; delay?: number; tilt?: boolean; as?: any }) {
+  const reduced = useReducedMotion();
+  const rx = useSpring(0, { stiffness: 220, damping: 18 }); const ry = useSpring(0, { stiffness: 220, damping: 18 });
+  const glowX = useMotionValue(50); const glowY = useMotionValue(50);
+  const sheen = useTransform([glowX, glowY], ([x, y]: any) => `radial-gradient(260px circle at ${x}% ${y}%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%)`);
+  const M = (motion as any)[as];
+  const move = (e: any) => {
+    if (!tilt || reduced) return;
+    const r = e.currentTarget.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width; const py = (e.clientY - r.top) / r.height;
+    ry.set((px - 0.5) * 7); rx.set(-(py - 0.5) * 7); glowX.set(px * 100); glowY.set(py * 100);
+  };
+  const leave = () => { rx.set(0); ry.set(0); };
+  return (
+    <M className={`card ${className}`} style={{ rotateX: rx, rotateY: ry, transformPerspective: 900, position: "relative" }}
+      initial={reduced ? false : { opacity: 0, y: 34, scale: 0.97, filter: "blur(6px)" }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }} viewport={{ once: true, amount: 0.25 }}
+      transition={{ duration: 0.7, ease, delay }} whileTap={tilt ? { scale: 0.985 } : undefined}
+      onPointerMove={move} onPointerLeave={leave}>
+      {tilt && !reduced && <motion.span aria-hidden="true" style={{ position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", backgroundImage: sheen, mixBlendMode: "soft-light" }} />}
+      {children}
+    </M>
+  );
+}
+
+const PICON: Record<string, string> = {
+  film: "M4 5h16v14H4zM8 5v14M16 5v14M4 9.5h4M4 14.5h4M16 9.5h4M16 14.5h4",
+  ball: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M7.5 5.2c2.2 4 2.2 9.6 0 13.6M16.5 5.2c-2.2 4-2.2 9.6 0 13.6",
+  bowl: "M3 11h18a9 8 0 0 1-18 0zM8 7.5c0-1.6 1.2-2 1.2-3.5M12 7.5c0-1.6 1.2-2 1.2-3.5M16 7.5c0-1.6 1.2-2 1.2-3.5",
+  pin: "M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21zM12 7a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5",
+  person: "M12 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7M5 20c1-4 4-6 7-6s6 2 7 6",
+  paw: "M12 12.5c-3 0-5 3-5 5.2 0 1.6 1.6 2.3 5 2.3s5-.7 5-2.3c0-2.2-2-5.2-5-5.2zM6 7.5v3M10 4v3M14 4v3M18 7.5v3",
+  case: "M4 8h16v11H4zM9 8V5h6v3M4 13h16",
+  shuffle: "M3 7h3c4.5 0 6.5 10 11 10h4M3 17h3c1.6 0 2.9-1.3 4-3.2M13.9 10.1C15 8.3 16.2 7 18 7h3M18 4l3 3-3 3M18 14l3 3-3 3",
+  mix: "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5",
+  spark: "M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z",
+  cards: "M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z",
+};
+const PackIcon = ({ k }: { k?: string }) => <svg viewBox="0 0 24 24" className="ln pi" aria-hidden="true"><path d={PICON[k ?? "cards"] ?? PICON.cards} /></svg>;
+
+const Ln = ({ d, c = "" }: { d: string; c?: string }) => <svg viewBox="0 0 24 24" className={`ln ${c}`} aria-hidden="true"><path d={d} /></svg>;
+
+function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+  const [n, setN] = useState(0);
+  return (
+    <span className="swrap" data-on={on}>
+    <button type="button" role="switch" aria-checked={on} aria-label={label} className="switch morph" data-morph onClick={(e) => { e.stopPropagation(); setN((x) => x + 1); onChange(!on); }}>
+      <span key={n} className={`fill ${n > 0 ? (on ? "surge" : "drain") : ""}`} /><span className="txt on">ON</span><span className="txt off">OFF</span>
+      <span className="thumb"><svg className="ln yes" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><svg className="ln no" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17" /></svg></span>
+      <span className="lens" />
+    </button>
+    </span>
+  );
+}
+
+function Setting({ title, sub, on, onChange }: { title: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="setting" onClick={() => onChange(!on)}>
+      <div><strong>{title}</strong><span>{sub}</span></div>
+      <Switch on={on} onChange={onChange} label={title} />
+    </div>
+  );
+}
+
+
+const LIBRARY = [
+  { name: "Bollywood blockbusters", icon: "film", words: ["Sholay", "Lagaan", "Dangal", "Dilwale", "Don", "Kabir Singh", "Barfi", "Queen", "PK", "Andhadhun", "Swades", "Jawan", "Taare Zameen Par", "Devdas", "Gully Boy", "Kahaani", "Chak De India", "Rang De Basanti", "Munna Bhai", "Zindagi Na Milegi Dobara"] },
+  { name: "Cricket", icon: "ball", words: ["Wicket", "Umpire", "Yorker", "Sixer", "Bouncer", "Stumps", "Run out", "Duck", "Century", "Helmet", "Pitch", "Googly", "Captain", "Boundary", "Maiden over", "Free hit", "Toss", "Slip", "No ball", "Super over"] },
+  { name: "Street food", icon: "bowl", words: ["Pani puri", "Vada pav", "Momos", "Samosa", "Chole bhature", "Pav bhaji", "Jalebi", "Dosa", "Kathi roll", "Bhel puri", "Kulfi", "Chai", "Maggi", "Biryani", "Dabeli", "Aloo tikki", "Idli", "Lassi", "Falooda", "Kebab"] },
+  { name: "Places", icon: "pin", words: ["Airport", "Library", "Beach", "Hospital", "Cinema", "Gym", "Museum", "Supermarket", "Zoo", "Casino", "School", "Train station", "Wedding", "Farm", "Hotel", "Stadium", "Bakery", "Aquarium", "Campsite", "Lighthouse"] },
+  { name: "Jobs", icon: "person", words: ["Dentist", "Pilot", "Chef", "Firefighter", "Plumber", "Detective", "Astronaut", "Teacher", "Barber", "Lifeguard", "Farmer", "DJ", "Judge", "Photographer", "Magician", "Surgeon", "Referee", "Taxi driver", "Librarian", "Electrician"] },
+  { name: "Animals", icon: "paw", words: ["Elephant", "Penguin", "Giraffe", "Octopus", "Kangaroo", "Owl", "Dolphin", "Camel", "Peacock", "Crocodile", "Hedgehog", "Flamingo", "Bat", "Tiger", "Sloth", "Shark", "Parrot", "Bee", "Panda", "Chameleon"] },
+  { name: "Office life", icon: "case", words: ["Stapler", "Meeting", "Printer", "Deadline", "Coffee machine", "Spreadsheet", "Boss", "Lift", "Payday", "Whiteboard", "Intern", "Lunch break", "Email", "Promotion", "Desk", "Badge", "Laptop", "Elevator pitch", "Overtime", "Team outing"] },
+];
+const SURPRISE_THEMES = ["90s cartoons", "Monsoon", "Indian weddings", "Space travel", "Video games", "Superheroes", "Board games", "Music festivals", "Road trip", "Hospital drama", "Desserts", "Wild west", "Pirates", "School days", "Under the sea"];
+const shuffle = <T,>(a: T[]) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+
+function Pack({ state, skipped, onToggle, onAgain }: { state: any; skipped: string[]; onToggle: (w: string) => void; onAgain: () => void }) {
+  const [all, setAll] = useState(false);
+  if (state.kind === "loading") return (
+    <motion.div key="loading" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} style={{ display: "grid", gap: 10 }}>
+      <div className="pack-head"><div><span className="label">Claude Haiku is writing</span><h2>{state.topic}</h2></div></div>
+      <div className="words">{Array.from({ length: 12 }, (_, i) => <span key={i} className="word skel" style={{ width: 52 + ((i * 37) % 50), animationDelay: `${i * 60}ms` }} />)}</div>
+    </motion.div>
+  );
+  if (state.kind === "error") return (
+    <motion.div key="error" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} style={{ display: "grid", gap: 8 }}>
+      <span className="label">Claude Haiku</span><h2>{state.topic}</h2><p className="status err">{state.msg}</p>
+      <div className="row-btns"><button className="btn light" type="button" onClick={onAgain}>Try again</button></div>
+    </motion.div>
+  );
+  const p = state.pack;
+  const shown = all ? p.words : p.words.slice(0, 12);
+  const live = p.words.length - skipped.length;
+  const label = state.kind === "ai" ? "Made by Claude Haiku" : state.kind === "mix" ? "Random mix" : state.rolled ? "Picked at random" : "Starter pack";
+  return (
+    <motion.div key={p.name} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.35, ease }} style={{ display: "grid", gap: 12 }}>
+      <div className="pack-head"><div><span className="label">{label}</span><h2 className="pack-name">{p.icon && <PackIcon k={p.icon} />}{p.name}</h2></div>
+        <motion.span key={live} className="badge ai" initial={{ scale: 0.7 }} animate={{ scale: 1 }}>{live} words in play</motion.span>
+      </div>
+      <motion.div className="words" layout initial="hide" animate="show" variants={{ show: { transition: { staggerChildren: 0.02 } } }}>
+        {shown.map((w: string) => {
+          const off = skipped.includes(w);
+          return (
+            <motion.button type="button" layout key={w} className={`word pick ${off ? "off" : ""}`} aria-pressed={!off} title={off ? "Tap to bring it back" : "Tap to skip this word"}
+              onClick={() => onToggle(w)} whileTap={{ scale: 0.9 }}
+              variants={{ hide: { opacity: 0, scale: 0.6, y: 6 }, show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 420, damping: 18 } } }}>{w}</motion.button>
+          );
+        })}
+        {p.words.length > 12 && <motion.button layout type="button" className="word more" onClick={() => setAll(!all)}>{all ? "Show less" : `+${p.words.length - 12} more`}</motion.button>}
+      </motion.div>
+      <p className="tip">Tap a word to skip it. Skipped words never come up.</p>
+      {state.kind === "ai" && <div className="row-btns"><motion.button whileTap={{ scale: 0.95 }} className="btn light" type="button" onClick={onAgain}>Write a different 20</motion.button></div>}
+    </motion.div>
+  );
+}
+
+const MODES = [
+  { id: "local", t: "This phone", s: "Pass it round the table", cta: "Deal the cards", d: "M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2" },
+  { id: "host", t: "Host a room", s: "Everyone on their own phone", cta: "Open the room", d: "M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" },
+  { id: "join", t: "Join a room", s: "Nearby, by QR or by code", cta: "Find a room", d: "M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14M20 20l-3.5-3.5" },
+];
+
+function Step({ n, title, sub, summary, open, done, onToggle, onNext, nextLabel, children, delay = 0 }: { n: number; title: string; sub: string; summary: string; open: boolean; done: boolean; onToggle: () => void; onNext?: () => void; nextLabel?: string; children: any; delay?: number }) {
+  return (
+    <Card delay={delay} tilt={false} className={`step ${open ? "open" : ""}`}>
+      <button type="button" className="step-head" aria-expanded={open} onClick={onToggle}>
+        <span className={`num ${done ? "done" : ""}`}>
+          <AnimatePresence mode="wait" initial={false}>
+            {done
+              ? <motion.svg key="ok" viewBox="0 0 24 24" className="ln" initial={{ scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}><path d="M5 12.5l4.5 4.5L19 7.5" /></motion.svg>
+              : <motion.span key="n" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>{n}</motion.span>}
+          </AnimatePresence>
+        </span>
+        <div><h2>{title}</h2>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span key={open ? "sub" : summary} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }} className={open ? "" : "sum"}>{open ? sub : summary}</motion.span>
+          </AnimatePresence>
+        </div>
+        <motion.svg viewBox="0 0 24 24" className="ln caret" animate={{ rotate: open ? 180 : 0 }} transition={{ type: "spring", stiffness: 300, damping: 22 }}><path d="m6 9 6 6 6-6" /></motion.svg>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div key="body" className="step-clip" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.38, ease }}>
+            <div className="step-body">
+              {children}
+              {onNext && <motion.button type="button" className="btn next" whileTap={{ scale: 0.97 }} onClick={onNext}>{nextLabel}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Card>
+  );
+}
+
+function Home({ onStart }: { onStart: (cfg: any) => void }) {
+  const [pack, setPack] = useState<any>(() => LAST?.pack ?? { kind: "library", pack: LIBRARY[0] });
+  const [mine, setMine] = useState<any[]>(() => LAST?.mine ?? []); // packs Claude wrote this session
+  const [skipped, setSkipped] = useState<Record<string, string[]>>(() => LAST?.skipped ?? {});
+  const [rolling, setRolling] = useState(false);
+  const [vote, setVote] = useState(() => LAST?.vote ?? 0);
+  const [rules, setRules] = useState(() => LAST?.rules ?? { hint: true, last: true, timer: true });
+  const [mode, setMode] = useState(() => LAST?.mode ?? "local");
+  const [toast, setToast] = useState<string | null>(null);
+  const [open, setOpen] = useState(1);
+  const [seen, setSeen] = useState<number[]>([1]);
+  const goTo = (n: number) => { setOpen((o) => (o === n ? 0 : n)); setSeen((v) => (v.includes(n) ? v : [...v, n])); };
+  const sampleRef = useRef<any>(null);
+  // bigger visitors on a wide screen, where the tank is tall
+  const [crowdScale] = useState(() => (window.innerWidth >= 900 ? 1.25 : 2));
+  useEffect(() => { ((window as any).claude?.use ? (window as any).claude.use("sample") : Promise.resolve(null)).then((s: any) => { sampleRef.current = s; }).catch(() => {}); }, []);
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 2600); return () => clearTimeout(t); }, [toast]);
+
+  // Proximity glass: each control's --near goes from 0 to 1 as the pointer closes in.
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      document.querySelectorAll<HTMLElement>("[data-morph]").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right); const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+        el.style.setProperty("--near", Math.max(0, 1 - Math.hypot(dx, dy) / 70).toFixed(3));
+        el.style.setProperty("--mx", `${e.clientX - r.left}px`); el.style.setProperty("--my", `${e.clientY - r.top}px`);
+      });
+    };
+    const reset = () => document.querySelectorAll<HTMLElement>("[data-morph]").forEach((el) => el.style.setProperty("--near", "0"));
+    const up = (e: PointerEvent) => { if (e.pointerType !== "mouse") setTimeout(reset, 500); };
+    window.addEventListener("pointermove", onMove); document.addEventListener("pointerleave", reset); document.addEventListener("pointerup", up);
+    return () => { window.removeEventListener("pointermove", onMove); document.removeEventListener("pointerleave", reset); document.removeEventListener("pointerup", up); };
+  }, []);
+
+  const generate = async (topic: string) => {
+    const sample = sampleRef.current;
+    document.querySelector(".panel")?.scrollTo({ top: 0, behavior: "smooth" });
+    setOpen(1);
+    if (!sample) { setPack({ kind: "error", topic, msg: "Claude isn’t available in this view. Open the page signed in to claude.ai to make packs." }); return; }
+    setPack({ kind: "loading", topic });
+    try {
+      const res = await sample.json(
+        `You write word packs for "Imposter", a party game: everyone but the imposter sees one secret word from the pack, so words must be well-known, concrete, distinct from each other, guessable from one-word clues, and family-friendly. Theme: "${topic}". Reply with JSON only: {"name": "short pack title (2-4 words)", "words": [exactly 20 strings, each 1-3 words]}.`,
+        { model: "claude-haiku-5-5", modelTier: "quick", cache: false });
+      const words = Array.isArray(res?.words) ? [...new Set(res.words.map((w: any) => String(w).trim()).filter(Boolean))].slice(0, 24) : [];
+      if (words.length < 6) throw { code: "thin" };
+      const made = { name: String(res.name || topic).slice(0, 40), words, icon: "spark" };
+      setPack({ kind: "ai", topic, pack: made });
+      setMine((m) => [made, ...m.filter((x) => x.name !== made.name)].slice(0, 4));
+      setToast(`“${made.name}” is tonight’s pack.`);
+    } catch (err: any) {
+      const msg = err?.code === "rate_limited" ? "Too many packs at once. Wait a moment, then try again."
+        : err?.code === "not_granted" ? "Claude access is off for this page. Allow it in the page’s permissions to make packs."
+        : "That pack didn’t come through. Try again, or word the theme differently.";
+      setPack({ kind: "error", topic, msg });
+    }
+  };
+
+  const m = MODES.find((x) => x.id === mode)!;
+  const current = pack.pack ?? null;
+  const skip = current ? skipped[current.name] ?? [] : [];
+  const toggleWord = (w: string) => current && setSkipped((s) => {
+    const list = s[current.name] ?? [];
+    if (!list.includes(w) && current.words.length - list.length <= 6) { setToast("Keep at least 6 words in play."); return s; }
+    return { ...s, [current.name]: list.includes(w) ? list.filter((x) => x !== w) : [...list, w] };
+  });
+  const choose = (pk: any) => setPack({ kind: "library", pack: pk });
+  // spin through the packs like a slot machine, then land on one
+  const roll = () => {
+    if (rolling) return;
+    setRolling(true);
+    const pool = [...LIBRARY, ...mine]; const end = pool[Math.floor(Math.random() * pool.length)];
+    let i = 0; const spins = 9 + Math.floor(Math.random() * 4);
+    const tick = () => {
+      i++;
+      if (i < spins) { setPack({ kind: "library", pack: pool[(i + Math.floor(Math.random() * pool.length)) % pool.length], spinning: true }); setTimeout(tick, 50 + i * 12); }
+      else { setPack({ kind: "library", pack: end, rolled: true }); setRolling(false); setToast(`The dice picked “${end.name}”.`); }
+    };
+    tick();
+  };
+  const mix = () => {
+    const words = shuffle([...new Set(LIBRARY.flatMap((x) => x.words))]).slice(0, 20);
+    setPack({ kind: "mix", pack: { name: "Mix of everything", icon: "mix", words } });
+  };
+  const surprise = () => generate(SURPRISE_THEMES[Math.floor(Math.random() * SURPRISE_THEMES.length)]);
+  const live = current ? current.words.length - skip.length : 0;
+  const ruleNames = [rules.hint && "hint", rules.last && "last guess", rules.timer && "timer"].filter(Boolean).join(", ");
+  const done = [!!current, seen.includes(3), seen.includes(3)];
+  const progress = done.filter(Boolean).length;
+  const ruleCount = Object.values(rules).filter(Boolean).length;
+  return (
+    <div className="frame">
+      <section className="scene" aria-label="Aquarium">
+        <AquariumPrompt className="tank" title="What should tonight’s words be about?" placeholder="Type any theme…" fish={24} onSubmit={generate}
+          suggestions={["Surprise me", "Cricket", "Bollywood", "Office life", "Travel"]} hint="Claude Haiku writes 20 words for it. Tap the water to stir the fish." />
+        <div className="visitors" aria-hidden="true"><CrowdCanvas src="crowd@2x.png" rows={15} cols={4} pixelRatio={crowdScale} /></div>
+        <motion.div className="brand gutter" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
+          <span className="mark">IMP<i>O</i>STER</span>
+          <button type="button" className="trophy" onClick={() => setToast("Leaderboard and history open here in the app.")}><Ln d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /><span>Leaderboard</span></button>
+        </motion.div>
+      </section>
+
+      <motion.aside className="panel" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease, delay: 0.15 }}>
+        <div className="panel-body gutter">
+          <div className="panel-title"><h1>Set up tonight’s game</h1><span>{progress === 3 ? "Ready to play" : `${progress} of 3 done`}</span></div>
+          <div className="progress" aria-hidden="true">{[0, 1, 2].map((i) => <span key={i}><motion.i initial={false} animate={{ scaleX: done[i] ? 1 : 0 }} transition={{ duration: 0.5, ease }} /></span>)}</div>
+
+          <Step n={1} title="Words" sub="Pick a pack, shuffle for a random one, or ask the fish for any theme" open={open === 1} done={done[0]} onToggle={() => goTo(1)}
+            summary={current ? `${current.name} · ${live} words` : "Writing your pack…"} onNext={() => goTo(2)} nextLabel="Continue to rules">
+            <div className="library" role="listbox" aria-label="Word packs">
+              <motion.button type="button" className={`lib dice ${rolling ? "rolling" : ""}`} onClick={roll} whileTap={{ scale: 0.92 }} aria-label="Pick a random pack">
+                <motion.span animate={rolling ? { rotate: [0, 90, 180, 270, 360] } : { rotate: 0 }} transition={rolling ? { duration: 0.5, repeat: Infinity, ease: "linear" } : {}}><PackIcon k="shuffle" /></motion.span>Random
+              </motion.button>
+              <motion.button type="button" className={`lib ${pack.kind === "mix" ? "on" : ""}`} onClick={mix} whileTap={{ scale: 0.94 }}><PackIcon k="mix" />Mix of everything</motion.button>
+              {[...mine, ...LIBRARY].map((pk) => (
+                <motion.button key={pk.name} type="button" role="option" aria-selected={current?.name === pk.name} className={`lib ${current?.name === pk.name ? "on" : ""}`}
+                  onClick={() => choose(pk)} whileTap={{ scale: 0.94 }} layout><PackIcon k={pk.icon} />{pk.name}</motion.button>
+              ))}
+            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              <Pack key={pack.spinning ? "spin" : pack.kind + (pack.pack?.name ?? pack.topic)} state={pack} skipped={skip} onToggle={toggleWord}
+                onAgain={() => (pack.topic ? generate(pack.topic) : surprise())} />
+            </AnimatePresence>
+          </Step>
+
+          <Step n={2} title="Rules" sub="Change them any time between rounds" delay={0.05} open={open === 2} done={done[1]} onToggle={() => goTo(2)}
+            summary={`${vote === 0 ? "Votes on phones" : "Votes out loud"}${ruleNames ? ` · ${ruleNames}` : ""}`} onNext={() => goTo(3)} nextLabel="Continue">
+            <div className="seg morph" data-morph data-v={vote} role="group" aria-label="Voting">
+              <div className="pill" />
+              {[["Vote on phones", "Secret ballots"], ["Vote out loud", "Table decides"]].map(([t, s], i) => (
+                <button key={t} type="button" aria-pressed={vote === i} onClick={() => setVote(i)}><strong>{t}</strong><span>{s}</span></button>
+              ))}
+              <span className="lens" />
+            </div>
+            <div>
+              <Setting title="Imposter gets a hint" sub="They see the category, not the word" on={rules.hint} onChange={(v) => setRules({ ...rules, hint: v })} />
+              <Setting title="Last-chance guess" sub="A caught imposter can steal the round" on={rules.last} onChange={(v) => setRules({ ...rules, last: v })} />
+              <Setting title="Clue timer" sub="Two minutes to give clues" on={rules.timer} onChange={(v) => setRules({ ...rules, timer: v })} />
+            </div>
+          </Step>
+
+          <Step n={3} title="How you’re playing" sub="One shared phone, or everyone on their own" delay={0.05} open={open === 3} done={done[2]} onToggle={() => goTo(3)}
+            summary={`${m.t} · ${m.s}`}>
+            <div className="modes" role="radiogroup" aria-label="How you’re playing">
+              {MODES.map((x) => (
+                <motion.button key={x.id} type="button" role="radio" aria-checked={mode === x.id} className="mode" onClick={() => setMode(x.id)} whileTap={{ scale: 0.97 }}>
+                  <span className="ico"><Ln d={x.d} /></span>
+                  <span className="mode-txt"><strong>{x.t}</strong><span>{x.s}</span></span>
+                  <span className="radio" aria-hidden="true">{mode === x.id && <motion.i layoutId="radio-dot" transition={{ type: "spring", stiffness: 500, damping: 30 }} />}</span>
+                </motion.button>
+              ))}
+            </div>
+          </Step>
+          <p className="foot">Illustrations: Open Peeps (MIT). Crowd motion: Skiper 39 by Skiper UI.</p>
+        </div>
+
+        {/* always within reach: what you've picked, and the one button that starts it */}
+        <div className="cta gutter">
+          <div className="cta-sum">
+            <strong className="with-pi">{current ? <><PackIcon k={current.icon} />{current.name}</> : "Writing your pack…"}</strong>
+            <span>{current ? `${live} words` : "One moment"} · {vote === 0 ? "votes on phones" : "votes out loud"} · {ruleCount} rule{ruleCount === 1 ? "" : "s"} on</span>
+          </div>
+          <motion.button className="go" type="button" disabled={!current} whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} onClick={() => {
+              if (mode !== "local") { setToast(`${m.cta}: rooms need phones that can find each other, so this one opens in the phone app.`); return; }
+              LAST = { pack, vote, rules, mode, mine, skipped };
+              onStart({ pack: { name: current.name, icon: current.icon ?? "cards", words: current.words.filter((w: string) => !skip.includes(w)) }, rules: { ...rules, outLoud: vote === 1 } });
+            }}>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span key={m.cta} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.18 }}>{m.cta}</motion.span>
+            </AnimatePresence>
+            <Ln d="M5 12h14M13 6l6 6-6 6" />
+          </motion.button>
+        </div>
+      </motion.aside>
+
+      <AnimatePresence>
+        {toast && <motion.div className="toast" role="status" initial={{ y: 30, opacity: 0, x: "-50%" }} animate={{ y: 0, opacity: 1, x: "-50%" }} exit={{ y: 20, opacity: 0, x: "-50%" }}>{toast}</motion.div>}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+
+/* =====================================================================================
+   A full pass-and-play round: deal → clues → vote → reveal → last guess → results.
+   ===================================================================================== */
+const PLAYERS = [
+  { name: "Aarav", sprite: 3 }, { name: "Meera", sprite: 12 }, { name: "Kabir", sprite: 21 },
+  { name: "Zoya", sprite: 8 }, { name: "Rohan", sprite: 34 },
+];
+let LAST: any = null;
+let RULES: any = { hint: true, last: true, timer: true, outLoud: false };
+let PACK: any = { name: "Street food", icon: "bowl", words: ["Pani puri", "Vada pav", "Momos", "Samosa", "Chole bhature", "Pav bhaji", "Jalebi", "Dosa", "Kathi roll", "Bhel puri", "Kulfi", "Chai", "Maggi", "Biryani", "Dabeli", "Aloo tikki", "Idli", "Lassi", "Falooda", "Kebab"] };
+const PHASES = [["deal", "Deal"], ["clues", "Clues"], ["vote", "Vote"], ["reveal", "Reveal"], ["results", "Results"]] as const;
+const MOUTH_FACE: Record<number, number[]> = {};
+const rnd = (n: number) => Math.floor(Math.random() * n);
+const shuffled = <T,>(a: T[]) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = rnd(i + 1); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+
+function newRound(prevScores?: number[]) {
+  const word = PACK.words[rnd(PACK.words.length)];
+  const imposter = rnd(PLAYERS.length);
+  let order = shuffled(PLAYERS.map((_, i) => i));
+  if (order[0] === imposter) order = [...order.slice(1), order[0]]; // the imposter never speaks first
+  return { word, imposter, order, scores: prevScores ?? PLAYERS.map(() => 0) };
+}
+
+/** A player's face, cropped from the same crowd sheet the visitors use. */
+function Avatar({ i, size = 44, ring }: { i: number; size?: number; ring?: string }) {
+  const sp = PLAYERS[i].sprite; const col = sp % 15; const row = Math.floor(sp / 15);
+  const cw = size * 1.55; const ch = cw * (176 / 168);
+  return (
+    <span className="avatar" style={{ width: size, height: size, boxShadow: ring ? `0 0 0 3px ${ring}` : undefined,
+      backgroundImage: "url(crowd@2x.png)", backgroundSize: `${cw * 15}px ${ch * 4}px`,
+      backgroundPosition: `${-(col * cw + cw * 0.56 - size / 2)}px ${-(row * ch + ch * 0.27 - size / 2)}px` }} />
+  );
+}
+
+/* ---------------- the secret card: hold it, the water rises, it flips ---------------- */
+function SecretCard({ role, word, onSeen }: { role: "crew" | "imposter"; word: string; onSeen: () => void }) {
+  const fill = useMotionValue(0); const flip = useSpring(0, { stiffness: 160, damping: 18 });
+  const [shown, setShown] = useState(false);
+  const anim = useRef<any>(null);
+  const level = useTransform(fill, (v) => `${100 - v * 100}%`);
+  const backRot = useTransform(flip, (v) => v * 180); const faceRot = useTransform(flip, (v) => v * 180 - 180);
+  const press = () => {
+    anim.current?.stop();
+    anim.current = animate(fill, 1, { duration: 0.8 * (1 - fill.get()), ease: "easeIn", onComplete: () => { flip.set(1); setShown(true); onSeen(); navigator.vibrate?.(20); } });
+  };
+  const release = () => { anim.current?.stop(); flip.set(0); setShown(false); anim.current = animate(fill, 0, { duration: 0.45, ease: "easeOut" }); };
+  const imp = role === "imposter";
+  return (
+    <div className="card3d" onPointerDown={press} onPointerUp={release} onPointerLeave={release} onPointerCancel={release}
+      onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); press(); } }} onKeyUp={release}
+      role="button" tabIndex={0} aria-label={shown ? (imp ? "You are the imposter" : `Your word is ${word}`) : "Press and hold to see your card"}>
+      <motion.div className="side back" style={{ rotateY: backRot }}>
+        <motion.div className="cardwater" style={{ top: level }}><svg viewBox="0 0 200 20" preserveAspectRatio="none"><path d="M0 10 Q 25 0 50 10 T 100 10 T 150 10 T 200 10 V20 H0z" /></svg></motion.div>
+        <div className="back-mark"><span className="mark">IMP<i>O</i>STER</span><strong>Press and hold</strong><span>Keep the screen to yourself</span></div>
+      </motion.div>
+      <motion.div className={`side face ${imp ? "imp" : ""}`} style={{ rotateY: faceRot }}>
+        {imp ? (<>
+          <span className="label">You are the</span><strong className="big">Imposter</strong>
+          <span className="chip">{RULES.hint ? <>Category: {PACK.name}</> : "No hint this round"}</span>
+          <p>Blend in. Listen to the clues and work out the word.</p>
+        </>) : (<>
+          <span className="label">The secret word</span><strong className="big">{word}</strong>
+          <span className="chip"><PackIcon k={PACK.icon} />{PACK.name}</span>
+          <p>Give a clue, never the word itself.</p>
+        </>)}
+      </motion.div>
+    </div>
+  );
+}
+
+/** "Pass the phone to …" between turns. */
+function HandOff({ i, note, onReady }: { i: number; note: string; onReady: () => void }) {
+  return (
+    <motion.div className="handoff" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35, ease }}>
+      <span className="label">Pass the phone to</span>
+      <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}><Avatar i={i} size={108} ring="#1F9D8B" /></motion.div>
+      <h2 className="who">{PLAYERS[i].name}</h2>
+      <p className="muted">{note}</p>
+      <motion.button className="go wide" type="button" whileTap={{ scale: 0.97 }} onClick={onReady}>I’m {PLAYERS[i].name}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>
+    </motion.div>
+  );
+}
+
+/* ---------------- the clue timer: a round tank that drains ---------------- */
+function WaterTimer({ total, left }: { total: number; left: number }) {
+  const f = Math.max(0, left / total);
+  const color = f > 0.35 ? "#3BB3C9" : f > 0.12 ? "#F2B544" : "#E5484D";
+  const mm = Math.floor(left / 60); const ss = String(Math.max(0, left % 60)).padStart(2, "0");
+  return (
+    <div className="wtimer" role="timer" aria-label={left > 0 ? `${mm} minutes ${ss} seconds left` : "Time is up"}>
+      <svg viewBox="0 0 200 200">
+        <defs><clipPath id="tclip"><circle cx="100" cy="100" r="84" /></clipPath></defs>
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#E2DFD7" strokeWidth="8" />
+        <motion.circle cx="100" cy="100" r="92" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" transform="rotate(-90 100 100)"
+          strokeDasharray={2 * Math.PI * 92} animate={{ strokeDashoffset: 2 * Math.PI * 92 * (1 - f) }} transition={{ duration: 0.5, ease: "linear" }} />
+        <g clipPath="url(#tclip)">
+          <rect x="0" y="0" width="200" height="200" fill="#F4F3EF" />
+          <motion.g animate={{ y: 16 + (1 - f) * 168 }} transition={{ duration: 0.6, ease: "easeOut" }}>
+            <g className="twave"><path d="M-200 0 Q -175 -9 -150 0 T -100 0 T -50 0 T 0 0 T 50 0 T 100 0 T 150 0 T 200 0 T 250 0 T 300 0 T 350 0 T 400 0 V 220 H -200 Z" fill={color} opacity="0.22" /></g>
+            <g className="twave slow"><path d="M-200 4 Q -170 -6 -140 4 T -80 4 T -20 4 T 40 4 T 100 4 T 160 4 T 220 4 T 280 4 T 340 4 T 400 4 V 220 H -200 Z" fill={color} opacity="0.38" /></g>
+          </motion.g>
+          {[30, 70, 110, 150].map((x, k) => <circle key={x} className="tbub" cx={x} cy="190" r={3 + (k % 2) * 2} style={{ animationDelay: `${k * 0.7}s` }} />)}
+        </g>
+      </svg>
+      <div className="tlabel"><strong>{left > 0 ? `${mm}:${ss}` : "Time’s up"}</strong><span>{left > 0 ? "for clues" : "Start the vote"}</span></div>
+    </div>
+  );
+}
+
+function Confetti({ run }: { run: number }) {
+  const bits = useMemo(() => Array.from({ length: 70 }, (_, i) => ({ x: (Math.random() - 0.5) * 520, y: -260 - Math.random() * 260, r: Math.random() * 720 - 360, c: ["#E5484D", "#1F9D8B", "#F2B544", "#3BB3C9", "#15171A"][i % 5], d: 0.9 + Math.random() * 0.7, w: 6 + Math.random() * 6 })), [run]);
+  return (
+    <div className="confetti" aria-hidden="true">
+      {bits.map((b, i) => (
+        <motion.i key={`${run}-${i}`} style={{ background: b.c, width: b.w, height: b.w * 1.6 }}
+          initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }} animate={{ x: [0, b.x * 0.6, b.x], y: [0, b.y, b.y + 520], rotate: b.r, opacity: [1, 1, 0] }}
+          transition={{ duration: b.d * 2.2, ease: ["easeOut", "easeIn"], times: [0, 0.35, 1] }} />
+      ))}
+    </div>
+  );
+}
+
+function Game({ onMenu }: { onMenu: () => void }) {
+  const [roundNo, setRoundNo] = useState(1);
+  // computer: the action bar sits inside the card; phone: it floats over the crowd to save space
+  const [wide, setWide] = useState(() => window.matchMedia("(min-width: 900px)").matches);
+  useEffect(() => { const q = window.matchMedia("(min-width: 900px)"); const f = () => setWide(q.matches); q.addEventListener("change", f); return () => q.removeEventListener("change", f); }, []);
+  const [round, setRound] = useState(() => newRound());
+  const [phase, setPhase] = useState<string>("deal");
+  const [turn, setTurn] = useState(0);              // whose turn in deal / vote
+  const [handed, setHanded] = useState(false);
+  const [seen, setSeen] = useState(false);
+  const [speaker, setSpeaker] = useState(0);
+  const TOTAL = 120;
+  const [left, setLeft] = useState(TOTAL);
+  const [running, setRunning] = useState(false);
+  const [votes, setVotes] = useState<Record<number, number>>({});
+  const [pick, setPick] = useState<number | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [guess, setGuess] = useState<string | null>(null);
+  const [cheer, setCheer] = useState(false);
+  const [crowdScale] = useState(() => (window.innerWidth >= 900 ? 1.25 : 2));
+  const [boom, setBoom] = useState(0);
+  const [glass, setGlass] = useState(true);
+
+  // the clue timer
+  useEffect(() => {
+    if (!running || phase !== "clues") return;
+    const t = setInterval(() => setLeft((l) => { if (l <= 1) { setRunning(false); navigator.vibrate?.([60, 40, 60]); return 0; } return l - 1; }), 1000);
+    return () => clearInterval(t);
+  }, [running, phase]);
+
+  const tally = useMemo(() => { const t = PLAYERS.map(() => 0); Object.values(votes).forEach((v) => { if (v >= 0) t[v]++; }); return t; }, [votes]);
+  const top = Math.max(...tally);
+  const leaders = tally.map((n, i) => (n === top && top > 0 ? i : -1)).filter((i) => i >= 0);
+  const accused = leaders.length === 1 ? leaders[0] : null;
+  const caught = accused === round.imposter;
+  const outcome = !caught ? "escaped" : guess === round.word ? "stolen" : "caught";
+  const options = useMemo(() => shuffled([round.word, ...shuffled(PACK.words.filter((w) => w !== round.word)).slice(0, 7)]), [round]);
+
+  const go = (p: string) => {
+    setPhase(p); setTurn(0); setHanded(false); setSeen(false); setPick(null);
+    if (p === "clues") { setSpeaker(0); setLeft(TOTAL); setRunning(RULES.timer); }
+    if (p === "reveal") setRevealed(false);
+    setCheer(false);
+    document.querySelector(".gcard .panel-body")?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  // preview tabs: jump anywhere, filling in plausible earlier steps
+  const jump = (p: string) => {
+    if ((p === "reveal" || p === "results") && Object.keys(votes).length < PLAYERS.length) {
+      const v: Record<number, number> = {}; PLAYERS.forEach((_, i) => { v[i] = i === round.imposter ? (round.imposter + 1) % PLAYERS.length : (Math.random() < 0.75 ? round.imposter : (i + 2) % PLAYERS.length === i ? round.imposter : (i + 2) % PLAYERS.length); }); setVotes(v);
+    }
+    if (p === "results") finish(guess);
+    else go(p);
+  };
+  const points = (o: string) => PLAYERS.map((_, i) => {
+    if (i === round.imposter) return o === "escaped" ? 3 : o === "stolen" ? 2 : 0;
+    return o === "caught" ? (votes[i] === round.imposter ? 2 : 1) : 0;
+  });
+  const finish = (g: string | null) => {
+    setGuess(g);
+    go("results");
+    setTimeout(() => { setCheer(true); setBoom((b) => b + 1); }, 350);
+  };
+  const nextRound = () => {
+    const o = outcome; const pts = points(o);
+    setRound(newRound(round.scores.map((s, i) => s + pts[i]))); setRoundNo((n) => n + 1); setVotes({}); setGuess(null); go("deal");
+  };
+  const newGame = () => { setRound(newRound()); setRoundNo(1); setVotes({}); setGuess(null); go("deal"); };
+
+
+  // the action dock lives in the people area at the bottom: the main button for every step
+  const dockFor = (): { sum: string; sub: string; alt?: { label: string; on: () => void; on2?: boolean }; alts?: { label: string; on: () => void; icon?: string }[]; btn?: { label: string; on: () => void; disabled?: boolean; tone?: string } } => {
+    const nm = (i: number) => PLAYERS[i].name; const N = PLAYERS.length;
+    if (phase === "deal") {
+      const who = nm(round.order[turn]);
+      if (!handed) return { sum: `Card ${turn + 1} of ${N}`, sub: "Everyone else, look away", btn: { label: `I’m ${who}`, on: () => { setHanded(true); setSeen(false); } } };
+      return { sum: seen ? "Got it? Hide it and pass on" : "Press and hold the card", sub: `${who}’s turn · card ${turn + 1} of ${N}`,
+        btn: { label: turn + 1 < N ? "Hide and pass on" : "Start the clues", disabled: !seen, on: () => { if (turn + 1 < N) { setTurn(turn + 1); setHanded(false); } else go("clues"); } } };
+    }
+    if (phase === "clues") return { sum: left > 0 ? `${nm(round.order[speaker % N])} is giving a clue` : "Time’s up", sub: `${PACK.name} · 1 imposter among ${N}`,
+      alt: { label: "Next speaker", on: () => setSpeaker((x) => x + 1) }, btn: { label: "Start the vote", on: () => go("vote") } };
+    if (phase === "vote" && RULES.outLoud) return { sum: pick === null || pick === -1 ? "Agree out loud, then tap a face" : `The table picks ${nm(pick)}`, sub: "Votes out loud",
+      btn: { label: "Vote them out", disabled: pick === null || pick === -1, tone: "red", on: () => { const v: Record<number, number> = {}; PLAYERS.forEach((_, i) => { v[i] = pick!; }); setVotes(v); go("reveal"); } } };
+    if (phase === "vote") {
+      if (!handed) return { sum: `Vote ${turn + 1} of ${N}`, sub: "Votes are secret", btn: { label: `I’m ${nm(turn)}`, on: () => { setHanded(true); setPick(null); } } };
+      return { sum: pick === null ? "Tap a face to vote" : pick === -1 ? "Skipping this vote" : `Voting for ${nm(pick)}`, sub: `${nm(turn)} is voting`,
+        alt: { label: pick === -1 ? "✓ Skipping" : "Skip", on: () => setPick(-1), on2: pick === -1 },
+        btn: { label: "Lock in vote", disabled: pick === null, tone: "red", on: () => { setVotes({ ...votes, [turn]: pick! }); if (turn + 1 < N) { setTurn(turn + 1); setHanded(false); } else go("reveal"); } } };
+    }
+    if (phase === "reveal") {
+      if (accused === null) return { sum: "It’s a tie", sub: "Nobody is voted out", btn: { label: "See who it was", on: () => finish(null) } };
+      if (!revealed) return { sum: `${nm(accused)} got the most votes`, sub: "Moment of truth", btn: { label: `Reveal ${nm(accused)}’s card`, tone: "red", on: () => setRevealed(true) } };
+      return caught && !RULES.last ? { sum: `${nm(accused)} was the imposter`, sub: "Busted, no last guess this game", btn: { label: "See the results", on: () => finish(null) } }
+        : caught ? { sum: "One last chance", sub: `${nm(accused)} can still steal the round`, btn: { label: `Pass to ${nm(accused)}`, on: () => go("guess") } }
+        : { sum: `${nm(accused)} was innocent`, sub: `The imposter was ${nm(round.imposter)}`, btn: { label: "See the results", on: () => finish(null) } };
+    }
+    if (phase === "guess") return { sum: "Tap the word you think it was", sub: `${nm(round.imposter)} is guessing` };
+    return { sum: outcome === "caught" ? "Crew wins this round" : "Imposter wins this round", sub: `Round ${roundNo} done · the word was ${round.word}`,
+      alts: [{ label: "Main menu", on: onMenu, icon: "M3 12l9-8 9 8M5 10v10h14V10" }, { label: "New game", on: newGame, icon: "M4 4v6h6M20 20v-6h-6M5.6 15a8 8 0 0 0 13.4 3M18.4 9A8 8 0 0 0 5 6" }],
+      btn: { label: "Continue", on: nextRound } };
+  };
+  const dock = dockFor();
+  const dockEl = (
+      <motion.div className={`dock ${wide ? "in-card" : ""}`} initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2, ease }}>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div key={dock.sum} className="dock-sum" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
+            <strong>{dock.sum}</strong><span>{dock.sub}</span>
+          </motion.div>
+        </AnimatePresence>
+        {dock.alts?.map((a) => <motion.button key={a.label} type="button" className="dock-alt with-ico" whileTap={{ scale: 0.95 }} onClick={a.on} aria-label={a.label}>{a.icon && <Ln d={a.icon} />}<span>{a.label}</span></motion.button>)}
+        {dock.alt && <motion.button type="button" className={`dock-alt ${dock.alt.on2 ? "on" : ""}`} whileTap={{ scale: 0.95 }} onClick={dock.alt.on}>{dock.alt.label}</motion.button>}
+        {dock.btn && <motion.button type="button" className={`go dock-go ${dock.btn.tone ?? ""}`} disabled={dock.btn.disabled} whileTap={{ scale: 0.96 }} onClick={dock.btn.on} layout>
+          {dock.btn.label}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>}
+      </motion.div>
+  );
+  const phaseIndex = PHASES.findIndex(([k]) => k === phase || (phase === "guess" && k === "reveal"));
+  const pts = points(outcome);
+  const ranked = PLAYERS.map((p, i) => ({ ...p, i, total: round.scores[i] + (phase === "results" ? pts[i] : 0) })).sort((a, b) => b.total - a.total);
+
+  return (
+    <div className={`frame center-stage ${glass ? "glass" : ""}`}>
+      <section className="scene game-scene" aria-label="Aquarium">
+        <AquariumPrompt bare className="tank" fish={22} />
+        <div className="visitors" aria-hidden="true"><CrowdCanvas src="crowd@2x.png" rows={15} cols={4} pixelRatio={crowdScale} cheer={cheer} /></div>
+        <div className="brand gutter"><span className="mark">IMP<i>O</i>STER</span><button type="button" className="menu-btn" onClick={onMenu} aria-label="Main menu"><Ln d="M15 6l-6 6 6 6" /><span>Menu</span></button>
+        <div className="look" role="group" aria-label="Card style">
+          {[["glass", "Glass"], ["solid", "Solid"]].map(([k, l]) => (
+            <button key={k} type="button" aria-pressed={(k === "glass") === glass} onClick={() => setGlass(k === "glass")}>
+              {(k === "glass") === glass && <motion.span layoutId="lookpill" className="lookpill" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}<b>{l}</b>
+            </button>))}
+        </div></div>
+      </section>
+      <div className="veil" aria-hidden="true" />
+
+      <motion.aside className="gcard" initial={{ opacity: 0, y: 28, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease }}>
+        <div className="panel-body gutter">
+          <header className="ghead">
+            <div className="stack">{PLAYERS.map((_, i) => <Avatar key={i} i={i} size={30} />)}</div>
+            <div><strong>Round {roundNo}</strong><span>{PACK.name} · 5 players · 1 imposter</span></div>
+          </header>
+          <nav className="phases" aria-label="Round steps (tap to preview any screen)">
+            {PHASES.map(([k, label], i) => (
+              <button key={k} type="button" className={`ph ${i === phaseIndex ? "on" : ""} ${i < phaseIndex ? "past" : ""}`} onClick={() => jump(k)} aria-current={i === phaseIndex ? "step" : undefined}>
+                {i === phaseIndex && <motion.span layoutId="phpill" className="phpill" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}<i>{i < phaseIndex ? "✓" : i + 1}</i><b>{label}</b>
+              </button>
+            ))}
+          </nav>
+          <section className="side-players" aria-label="Players">
+            <span className="label">Players · score</span>
+            {PLAYERS.map((p, i) => (
+              <div key={p.name} className="sp"><Avatar i={i} size={30} /><strong>{p.name}</strong><span>{round.scores[i]}</span></div>
+            ))}
+          </section>
+
+          <AnimatePresence mode="wait">
+            {/* ---------------- DEAL ---------------- */}
+            {phase === "deal" && (
+              <motion.section key={`deal-${turn}-${handed}`} className="stage st-deal" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                <div className="dots" aria-label={`Card ${turn + 1} of ${PLAYERS.length}`}>{PLAYERS.map((_, i) => <i key={i} className={i < turn ? "done" : i === turn ? "now" : ""} />)}</div>
+                {!handed ? (
+                  <HandOff i={round.order[turn]} note="Everyone else, look away from the screen." onReady={() => { setHanded(true); setSeen(false); }} />
+                ) : (
+                  <div className="dealt">
+                    <h2 className="title">{PLAYERS[round.order[turn]].name}, your card</h2>
+                    <SecretCard role={round.order[turn] === round.imposter ? "imposter" : "crew"} word={round.word} onSeen={() => setSeen(true)} />
+                    <motion.button className="go wide" type="button" disabled={!seen} whileTap={{ scale: 0.97 }}
+                      onClick={() => { if (turn + 1 < PLAYERS.length) { setTurn(turn + 1); setHanded(false); } else go("clues"); }}>
+                      {!seen ? "Hold the card to see it" : turn + 1 < PLAYERS.length ? "Got it, hide and pass on" : "Everyone’s seen it, start the clues"}
+                    </motion.button>
+                  </div>
+                )}
+              </motion.section>
+            )}
+
+            {/* ---------------- CLUES ---------------- */}
+            {phase === "clues" && (
+              <motion.section key="clues" className="stage st-clues" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                <h2 className="title">Clue time</h2>
+                <p className="muted">One word each, in this order. Go round as many times as you like.</p>
+                {RULES.timer && <WaterTimer total={TOTAL} left={left} />}
+                {RULES.timer && <div className="tctl">
+                  <button type="button" className="btn light" onClick={() => setRunning(!running)} disabled={left === 0}>{running ? "Pause" : "Resume"}</button>
+                  <button type="button" className="btn light" onClick={() => { setLeft((l) => l + 30); setRunning(true); }}>+30 sec</button>
+                </div>}
+                <ol className="order">
+                  {round.order.map((pi, k) => {
+                    const now = k === speaker % PLAYERS.length;
+                    return (
+                      <motion.li key={pi} layout className={now ? "now" : ""} onClick={() => setSpeaker(k)}>
+                        <span className="n">{k + 1}</span><Avatar i={pi} size={36} ring={now ? "#0B4757" : undefined} /><strong>{PLAYERS[pi].name}</strong>
+                        {now && <motion.span layoutId="speaking" className="speaking">Speaking</motion.span>}
+                      </motion.li>
+                    );
+                  })}
+                </ol>
+                <div className="row-btns">
+                  <motion.button type="button" className="btn light" whileTap={{ scale: 0.96 }} onClick={() => setSpeaker((s) => s + 1)}>Next speaker</motion.button>
+                </div>
+              </motion.section>
+            )}
+
+            {/* ---------------- VOTE ---------------- */}
+            {phase === "vote" && (
+              <motion.section key={`vote-${turn}-${handed}`} className="stage st-vote" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                <div className="dots" aria-label={`Vote ${turn + 1} of ${PLAYERS.length}`}>{PLAYERS.map((_, i) => <i key={i} className={i < turn ? "done" : i === turn ? "now" : ""} />)}</div>
+                {!handed && !RULES.outLoud ? (
+                  <HandOff i={turn} note="Votes are secret. Nobody sees who you pick." onReady={() => { setHanded(true); setPick(null); }} />
+                ) : (
+                  <>
+                    <h2 className="title">{RULES.outLoud ? "Talk it out. Who does the table vote out?" : `${PLAYERS[turn].name}, who’s the imposter?`}</h2>
+                    <div className="vgrid">
+                      {PLAYERS.map((p, i) => i === turn && !RULES.outLoud ? null : (
+                        <motion.button key={p.name} type="button" className={`vtile ${pick === i ? "on" : ""}`} aria-pressed={pick === i} onClick={() => setPick(i)} whileTap={{ scale: 0.95 }} layout>
+                          <Avatar i={i} size={64} ring={pick === i ? "#E5484D" : undefined} /><strong>{p.name}</strong>
+                          <AnimatePresence>{pick === i && <motion.span className="stamp" initial={{ scale: 2, opacity: 0, rotate: -20 }} animate={{ scale: 1, opacity: 1, rotate: -10 }} exit={{ opacity: 0 }}>SUS</motion.span>}</AnimatePresence>
+                        </motion.button>
+                      ))}
+                    </div>
+                    <div className="row-btns spread">
+                      <button type="button" className="btn light" onClick={() => setPick(-1)} aria-pressed={pick === -1}>{pick === -1 ? "✓ Skipping" : "Skip my vote"}</button>
+                      <motion.button type="button" className="go" disabled={pick === null} whileTap={{ scale: 0.96 }} onClick={() => {
+                        const v = { ...votes, [turn]: pick! }; setVotes(v);
+                        if (turn + 1 < PLAYERS.length) { setTurn(turn + 1); setHanded(false); } else go("reveal");
+                      }}>Lock in vote<Ln d="M5 12.5l4.5 4.5L19 7.5" /></motion.button>
+                    </div>
+                  </>
+                )}
+              </motion.section>
+            )}
+
+            {/* ---------------- REVEAL ---------------- */}
+            {phase === "reveal" && (
+              <motion.section key="reveal" className="stage st-reveal" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                <h2 className="title">The votes are in</h2>
+                <div className="bars">
+                  {PLAYERS.map((p, i) => (
+                    <div key={p.name} className={`bar ${i === accused ? "lead" : ""}`}>
+                      <Avatar i={i} size={34} /><strong>{p.name}</strong>
+                      <div className="track"><motion.i initial={{ width: 0 }} animate={{ width: `${(tally[i] / PLAYERS.length) * 100}%` }} transition={{ duration: 0.8, delay: 0.2 + i * 0.12, ease }} /></div>
+                      <span className="cnt">{tally[i]}</span>
+                    </div>
+                  ))}
+                </div>
+                {accused === null ? (
+                  <div className="verdict tie"><strong>It’s a tie.</strong><span>Nobody is voted out, so the imposter escapes.</span>
+                    <motion.button className="go wide" type="button" whileTap={{ scale: 0.97 }} onClick={() => finish(null)}>See who it was</motion.button></div>
+                ) : !revealed ? (
+                  <motion.button className="go wide" type="button" whileTap={{ scale: 0.97 }} onClick={() => setRevealed(true)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
+                    Reveal {PLAYERS[accused].name}’s card
+                  </motion.button>
+                ) : (
+                  <motion.div className={`verdict ${caught ? "caught" : "wrong"}`} initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 140, damping: 16 }}>
+                    <Avatar i={accused} size={72} ring={caught ? "#E5484D" : "#1F9D8B"} />
+                    <strong>{PLAYERS[accused].name} {caught ? "was the imposter!" : "was innocent."}</strong>
+                    <span>{caught ? (RULES.last ? "One last chance: if they name the word, they steal the round." : "Busted. The crew wins.") : `The real imposter was ${PLAYERS[round.imposter].name}.`}</span>
+                    <motion.button className="go wide" type="button" whileTap={{ scale: 0.97 }} onClick={() => (caught ? go("guess") : finish(null))}>{caught ? `Pass the phone to ${PLAYERS[accused].name}` : "See the results"}</motion.button>
+                  </motion.div>
+                )}
+              </motion.section>
+            )}
+
+            {/* ---------------- LAST GUESS ---------------- */}
+            {phase === "guess" && (
+              <motion.section key="guess" className="stage st-guess" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                <span className="label">Last chance</span>
+                <h2 className="title">{PLAYERS[round.imposter].name}, what was the word?</h2>
+                <p className="muted">Pick right and you steal the round.</p>
+                <div className="ggrid">
+                  {options.map((w, i) => (
+                    <motion.button key={w} type="button" className="gtile" whileTap={{ scale: 0.95 }} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                      onClick={() => finish(w)}>{w}</motion.button>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
+            {/* ---------------- RESULTS ---------------- */}
+            {phase === "results" && (
+              <motion.section key="results" className="stage st-results" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                <div className={`result ${outcome}`}>
+                  <span className="label">{outcome === "caught" ? "Crew wins" : "Imposter wins"}</span>
+                  <strong>{outcome === "caught" ? `${PLAYERS[round.imposter].name} was caught` : outcome === "stolen" ? `${PLAYERS[round.imposter].name} guessed “${round.word}”` : `${PLAYERS[round.imposter].name} fooled everyone`}</strong>
+                  <div className="wordline"><span>The word was</span><b>{round.word}</b></div>
+                </div>
+                <div className="board">
+                  {ranked.map((p, k) => (
+                    <motion.div key={p.name} layout className="brow" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + k * 0.08 }}>
+                      <span className="rank">{k + 1}</span><Avatar i={p.i} size={36} ring={p.i === round.imposter ? "#E5484D" : undefined} />
+                      <strong>{p.name}{p.i === round.imposter && <em>imposter</em>}</strong>
+                      {pts[p.i] > 0 && <motion.span className="plus" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.8 + k * 0.08, type: "spring", stiffness: 500, damping: 14 }}>+{pts[p.i]}</motion.span>}
+                      <span className="total">{p.total}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                <motion.button className="go wide" type="button" whileTap={{ scale: 0.97 }} onClick={nextRound}>Next round<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>
+              </motion.section>
+            )}
+          </AnimatePresence>
+        </div>
+        {/* phase-aware bar at the bottom: what's happening and the main action */}
+        {phase === "clues" && (
+          <div className="cta gutter">
+            <div className="cta-sum"><strong>{left > 0 ? `${PLAYERS[round.order[speaker % PLAYERS.length]].name} is giving a clue` : "Time’s up"}</strong><span>{PACK.name} · 1 imposter among 5</span></div>
+            <motion.button className="go" type="button" whileTap={{ scale: 0.96 }} onClick={() => go("vote")}>Start the vote<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>
+          </div>
+        )}
+        {wide && dockEl}
+      </motion.aside>
+      {!wide && dockEl}
+      {phase === "results" && <Confetti run={boom} />}
+    </div>
+  );
+}
+
+function Root() {
+  const [screen, setScreen] = useState<"home" | "game">("home");
+  const [run, setRun] = useState(0);
+  const start = (cfg: any) => { PACK = cfg.pack; RULES = cfg.rules; setRun((r) => r + 1); setScreen("game"); window.scrollTo(0, 0); };
+  return (
+    <AnimatePresence mode="wait">
+      {screen === "home"
+        ? <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.02, filter: "blur(6px)" }} transition={{ duration: 0.4, ease }}><Home onStart={start} /></motion.div>
+        : <motion.div key={`game-${run}`} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, filter: "blur(6px)" }} transition={{ duration: 0.45, ease }}><Game onMenu={() => { setScreen("home"); window.scrollTo(0, 0); }} /></motion.div>}
+    </AnimatePresence>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")!).render(<Root />);
+
+</script>
+
+<script>
+// Compile the TSX above in the browser and run it, wiring its imports to the libraries loaded on this page.
+(function () {
+  const root = document.getElementById('root');
+  try {
+    const src = document.getElementById('app-src').textContent;
+    const { code } = Babel.transform(src, { filename: 'app.tsx', presets: [['typescript', { isTSX: true, allExtensions: true }], 'react'], plugins: ['transform-modules-commonjs'] });
+    const mods = { react: React, 'framer-motion': Motion, gsap: { gsap: window.gsap, default: window.gsap } };
+    const module = { exports: {} };
+    new Function('require', 'module', 'exports', 'React', 'ReactDOM', code)((n) => mods[n], module, module.exports, React, ReactDOM);
+  } catch (e) {
+    console.error(e);
+    root.innerHTML = '<p class="boot">This page couldn’t start. Reload to try again.</p>';
+  }
+})();
+</script>
+
+</body>
+</html>
