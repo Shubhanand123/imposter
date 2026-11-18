@@ -8,6 +8,8 @@ A pass-and-play party game for one phone. Everyone gets the secret word except t
 
 It is a single static page (`index.html`) with no build step. React, Framer Motion and GSAP load from a CDN.
 
+Install it: open the site on your phone and choose "Add to Home Screen" (iPhone: Share menu; Android: the browser menu or the install prompt). It then opens full screen and works offline.
+
 AI-written word packs (type any theme) only work when the page runs inside claude.ai; elsewhere the built-in packs are used.
 
 Illustrations: [Open Peeps](https://www.openpeeps.com/) by Pablo Stanley (MIT). Crowd motion based on Skiper 39 by Skiper UI.
