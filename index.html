@@ -682,6 +682,50 @@ body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 15px; 
 .dotl { display: inline-flex; gap: 4px; margin-right: 6px } .dotl i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: dotl 1s ease-in-out infinite } .dotl i:nth-child(2) { animation-delay: .15s } .dotl i:nth-child(3) { animation-delay: .3s }
 @keyframes dotl { 0%, 100% { opacity: .25; transform: translateY(0) } 50% { opacity: 1; transform: translateY(-3px) } }
 @media (max-width: 420px) { .lobby-code { flex-direction: column; text-align: center } .lc-right { justify-items: center } .share-btn { justify-self: center } }
+
+/* ---------- leaderboard ---------- */
+.lb-scrim { position: fixed; inset: 0; z-index: 80; display: grid; place-items: end center; background: rgba(6,30,38,.45); backdrop-filter: blur(4px) }
+@media (min-width: 700px) { .lb-scrim { place-items: center } }
+.lb { width: min(520px, 100%); max-height: min(86dvh, 760px); display: flex; flex-direction: column; gap: 12px; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); border-radius: 26px 26px 0 0; background: var(--paper); box-shadow: 0 -20px 60px -20px rgba(0,30,40,.6) }
+@media (min-width: 700px) { .lb { border-radius: 26px } }
+.lb-head { display: flex; align-items: center; gap: 12px }
+.lb-head > div { flex: 1; display: grid; min-width: 0 }
+.lb-head strong { font: 700 20px var(--display); letter-spacing: -.02em }
+.lb-head span { font-size: 12.5px; color: var(--muted) }
+.lb-trophy, .lb-back, .lb-x { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; border: 0; cursor: pointer }
+.lb-trophy { background: var(--ink); color: #F2B544 }
+.lb-back, .lb-x { background: var(--chip); color: var(--ink) }
+.lb-trophy svg, .lb-back svg, .lb-x svg { width: 20px; height: 20px }
+.lb-seg button { padding: 9px 8px }
+.lb-body { overflow-y: auto; display: grid; gap: 10px; align-content: start; min-height: 120px }
+.lb-list { display: grid; gap: 6px }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--line); text-align: left; font-family: var(--body); color: var(--ink); width: 100% }
+button.lb-row { cursor: pointer } button.lb-row:hover { border-color: var(--water) }
+.lb-row > div { flex: 1; min-width: 0; display: grid }
+.lb-row strong { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.lb-row span { font-size: 12px; color: var(--muted) }
+.lb-row > svg { width: 16px; height: 16px; color: #A8A49B }
+.lb-row .rank { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 12px var(--display); background: var(--chip); color: var(--muted) }
+.lb-row .rank.r1 { background: #F2B544; color: #3D2A00 } .lb-row .rank.r2 { background: #CFD5DA; color: #2B3238 } .lb-row .rank.r3 { background: #E3A777; color: #3A1E08 }
+.pts { font: 800 15px var(--display); font-variant-numeric: tabular-nums } .pts.big { font-size: 20px }
+.lb-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+.lb-stats div { display: grid; justify-items: center; padding: 12px 4px; border-radius: 14px; background: #fff; border: 1px solid var(--line) }
+.lb-stats b { font: 800 22px var(--display) } .lb-stats span { font-size: 11.5px; color: var(--muted) }
+.hist .tag { flex: none; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #E3F4F1; color: var(--ok) }
+.hist .tag.imp { background: #FFE9E9; color: #C4282E }
+.hist .res { font-size: 12px; font-weight: 700 } .hist.won .res { color: var(--ok) } .hist.lost .res { color: var(--muted) }
+.game .lead { display: grid; justify-items: end; font-size: 12px; color: var(--muted) } .game .lead b { font: 800 16px var(--display); color: var(--ink) }
+.lb-empty { display: grid; gap: 6px; padding: 26px 18px; text-align: center; border-radius: 18px; background: #fff; border: 1px dashed #D6D3CB }
+.lb-empty span { color: var(--muted); font-size: 13.5px }
+.lb-clear { justify-self: center; border: 0; background: none; color: var(--muted); font: 600 13px var(--body); cursor: pointer; text-decoration: underline }
+
+/* ---------- QR scanner ---------- */
+.scan-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px }
+.scan-btn svg { width: 18px; height: 18px }
+.scanner { position: relative; display: grid; gap: 10px }
+.scanner video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px; background: #000 }
+.scan-frame { position: absolute; left: 50%; top: calc(50% - 22px); width: 58%; aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px solid rgba(255,255,255,.9); border-radius: 18px; box-shadow: 0 0 0 999px rgba(0,0,0,.25); pointer-events: none }
+.scan-tip { position: absolute; left: 0; right: 0; top: 12px; text-align: center; color: #fff; font-weight: 600; font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,.6) }
 @media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
 </style>
 </head>
@@ -1360,6 +1404,7 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
   const [players, setPlayers] = useState<any[]>(() => LAST?.players ?? [["Aarav", 3], ["Meera", 12], ["Kabir", 21], ["Zoya", 8], ["Rohan", 34]].map(([name, sprite], id) => ({ id, name, sprite })));
   const [newName, setNewName] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [showLb, setShowLb] = useState(false);
   const [open, setOpen] = useState(1);
   const [seen, setSeen] = useState<number[]>([1]);
   const goTo = (n: number) => { setOpen((o) => (o === n ? 0 : n)); setSeen((v) => (v.includes(n) ? v : [...v, n])); };
@@ -1405,6 +1450,11 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
       setMine((m) => [made, ...m.filter((x) => x.name !== made.name)].slice(0, 4));
       setToast(`“${made.name}” is tonight’s pack.`);
     } catch (err: any) {
+      if (!sample && err?.code !== "rate_limited") {
+        const off = offlinePack(topic);
+        if (off) { setPack({ kind: "ai", topic, pack: off }); setToast(`Made “${off.name}” from the built-in word library.`); return; }
+        setPack({ kind: "error", topic, msg: "No built-in pack fits that theme yet. Try Superheroes, Space, Travel, Festivals, Desserts or Video games, or pick a pack below." }); return;
+      }
       const msg = err?.code === "rate_limited" ? "Too many packs at once. Wait a moment, then try again."
         : err?.code === "not_granted" ? "Claude access is off for this page. Allow it in the page’s permissions to make packs."
         : err?.code === "not_configured" ? "AI packs aren’t switched on for this site yet. Pick a pack below, shuffle, or mix them all."
@@ -1453,7 +1503,7 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
         <div className="visitors" aria-hidden="true"><CrowdCanvas src="crowd@2x.png" rows={15} cols={4} pixelRatio={crowdScale} /></div>
         <motion.div className="brand gutter" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
           <span className="mark">IMP<i>O</i>STER</span>
-          <button type="button" className="trophy" onClick={() => setToast("Leaderboard and history open here in the app.")}><Ln d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /><span>Leaderboard</span></button>
+          <button type="button" className="trophy" onClick={() => setShowLb(true)}><Ln d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /><span>Leaderboard</span></button>
         </motion.div>
       </section>
 
@@ -1570,6 +1620,7 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
 
       <AnimatePresence>
         {toast && <motion.div className="toast" role="status" initial={{ y: 30, opacity: 0, x: "-50%" }} animate={{ y: 0, opacity: 1, x: "-50%" }} exit={{ y: 20, opacity: 0, x: "-50%" }}>{toast}</motion.div>}
+        {showLb && <Leaderboard key="lb" onClose={() => setShowLb(false)} />}
       </AnimatePresence>
     </div>
   );
@@ -1701,6 +1752,7 @@ function Confetti({ run }: { run: number }) {
 
 function Game({ onMenu }: { onMenu: () => void }) {
   const [roundNo, setRoundNo] = useState(1);
+  const [gameId, setGameId] = useState(newGameId);
   // computer: the action bar sits inside the card; phone: it floats over the crowd to save space
   const [wide, setWide] = useState(() => window.matchMedia("(min-width: 900px)").matches);
   useEffect(() => { const q = window.matchMedia("(min-width: 900px)"); const f = () => setWide(q.matches); q.addEventListener("change", f); return () => q.removeEventListener("change", f); }, []);
@@ -1765,7 +1817,7 @@ function Game({ onMenu }: { onMenu: () => void }) {
     const o = outcome; const pts = points(o);
     setRound(newRound(round.scores.map((s, i) => s + pts[i]))); setRoundNo((n) => n + 1); setVotes({}); setGuess(null); go("deal");
   };
-  const newGame = () => { setRound(newRound()); setRoundNo(1); setVotes({}); setGuess(null); go("deal"); };
+  const newGame = () => { setGameId(newGameId()); setRound(newRound()); setRoundNo(1); setVotes({}); setGuess(null); go("deal"); };
 
 
   // the action dock lives in the people area at the bottom: the main button for every step
@@ -1815,6 +1867,11 @@ function Game({ onMenu }: { onMenu: () => void }) {
   );
   const phaseIndex = PHASES.findIndex(([k]) => k === phase || (phase === "guess" && k === "reveal"));
   const pts = points(outcome);
+  useEffect(() => {
+    if (phase !== "results") return;
+    recordRound({ game: gameId, mode: "local", pack: PACK.name, round: roundNo, word: round.word, imposter: PLAYERS[round.imposter].name, outcome,
+      players: PLAYERS.map((p, i) => ({ name: p.name, sprite: p.sprite, points: pts[i], total: round.scores[i] + pts[i] })) });
+  }, [phase]);
   const ranked = PLAYERS.map((p, i) => ({ ...p, i, total: round.scores[i] + (phase === "results" ? pts[i] : 0) })).sort((a, b) => b.total - a.total);
 
   return (
@@ -2008,6 +2065,158 @@ function Game({ onMenu }: { onMenu: () => void }) {
       </motion.aside>
       {!wide && dockEl}
       {phase === "results" && <Confetti run={boom} />}
+    </div>
+  );
+}
+
+/* =====================================================================================
+   History and leaderboard. Every finished round is saved on this phone, for pass-and-play and
+   online rooms alike, so the leaderboard and each player's history survive closing the app.
+   ===================================================================================== */
+const HIST_KEY = "imposter-history-v1";
+const loadHistory = (): any[] => { try { return JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); } catch { return []; } };
+const newGameId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+/** r: { game, mode, pack, round, word, imposter (name), outcome, players: [{ name, sprite, points, total }] } */
+function recordRound(r: any) {
+  try {
+    const h = loadHistory();
+    if (h.some((x) => x.game === r.game && x.round === r.round)) return;
+    h.push({ ...r, at: Date.now() });
+    localStorage.setItem(HIST_KEY, JSON.stringify(h.slice(-600)));
+  } catch {}
+}
+function summarize(h: any[]) {
+  const P: Record<string, any> = {};
+  for (const r of h) for (const p of r.players) {
+    const k = p.name.trim().toLowerCase(); if (!k) continue;
+    const s = (P[k] ??= { name: p.name, sprite: p.sprite, rounds: 0, points: 0, crewWins: 0, impWins: 0, timesImp: 0, games: new Set(), log: [] });
+    const imp = p.name === r.imposter; const crewWon = r.outcome === "caught";
+    s.rounds += 1; s.points += p.points; s.games.add(r.game); s.sprite = p.sprite;
+    if (imp) { s.timesImp += 1; if (!crewWon) s.impWins += 1; } else if (crewWon) s.crewWins += 1;
+    s.log.push({ at: r.at, pack: r.pack, word: r.word, imp, won: imp ? !crewWon : crewWon, points: p.points, mode: r.mode });
+  }
+  const players = Object.values(P).map((s: any) => ({ ...s, games: s.games.size, wins: s.crewWins + s.impWins })).sort((a: any, b: any) => b.points - a.points || b.wins - a.wins);
+  const games: Record<string, any> = {};
+  for (const r of h) { const g = (games[r.game] ??= { id: r.game, at: r.at, pack: r.pack, mode: r.mode, rounds: 0, totals: {} as Record<string, number> }); g.rounds += 1; g.at = r.at; r.players.forEach((p: any) => { g.totals[p.name] = p.total; }); }
+  const gameList = Object.values(games).sort((a: any, b: any) => b.at - a.at).map((g: any) => { const best = Object.entries(g.totals).sort((a: any, b: any) => b[1] - a[1])[0]; return { ...g, leader: best?.[0], leaderPts: best?.[1] }; });
+  return { players, games: gameList };
+}
+const fmtDate = (t: number) => { try { return new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short" }) + " · " + new Date(t).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); } catch { return ""; } };
+
+function Leaderboard({ onClose }: { onClose: () => void }) {
+  const [hist, setHist] = useState(loadHistory);
+  const [tab, setTab] = useState<"players" | "games">("players");
+  const [who, setWho] = useState<string | null>(null);
+  const { players, games } = useMemo(() => summarize(hist), [hist]);
+  const sel = players.find((p: any) => p.name === who);
+  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === "Escape") (who ? setWho(null) : onClose()); }; addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, [who]);
+  return (
+    <motion.div className="lb-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <motion.div className="lb" role="dialog" aria-modal="true" aria-label="Leaderboard" onClick={(e) => e.stopPropagation()}
+        initial={{ y: 60, opacity: 0, scale: 0.97 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+        <header className="lb-head">
+          {sel ? <button type="button" className="lb-back" onClick={() => setWho(null)} aria-label="Back"><Ln d="M15 6l-6 6 6 6" /></button> : <span className="lb-trophy"><Ln d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /></span>}
+          <div><strong>{sel ? sel.name : "Leaderboard"}</strong><span>{sel ? `${sel.games} game${sel.games === 1 ? "" : "s"} · ${sel.rounds} rounds` : "Saved on this phone, every game you play"}</span></div>
+          <button type="button" className="lb-x" onClick={onClose} aria-label="Close"><Ln d="M7 7l10 10M17 7 7 17" /></button>
+        </header>
+        {!sel && <div className="seg lb-seg" data-v={tab === "players" ? 0 : 1} role="group" aria-label="View"><div className="pill" />
+          {[["players", "Players"], ["games", "Games"]].map(([k, l]) => <button key={k} type="button" aria-pressed={tab === k} onClick={() => setTab(k as any)}><strong>{l}</strong></button>)}</div>}
+        <div className="lb-body">
+          {hist.length === 0 ? (
+            <div className="lb-empty"><strong>No games yet</strong><span>Finish a round and the scores land here: points, wins as crew and as imposter, and each player’s history.</span></div>
+          ) : sel ? (<>
+            <div className="lb-stats">
+              {[["Points", sel.points], ["Wins", sel.wins], ["Crew wins", sel.crewWins], ["Imposter", `${sel.impWins}/${sel.timesImp}`]].map(([l, n]) => <div key={l as string}><b>{n}</b><span>{l}</span></div>)}
+            </div>
+            <span className="label">History</span>
+            <div className="lb-list">{[...sel.log].reverse().map((r: any, k: number) => (
+              <div key={k} className={`lb-row hist ${r.won ? "won" : "lost"}`}>
+                <span className={`tag ${r.imp ? "imp" : ""}`}>{r.imp ? "Imposter" : "Crew"}</span>
+                <div><strong>{r.word}</strong><span>{r.pack} · {fmtDate(r.at)}{r.mode === "online" ? " · online" : ""}</span></div>
+                <span className="res">{r.won ? "Won" : "Lost"}</span><b className="pts">+{r.points}</b>
+              </div>))}</div>
+          </>) : tab === "players" ? (
+            <div className="lb-list">{players.map((p: any, k: number) => (
+              <motion.button key={p.name} type="button" className="lb-row" onClick={() => setWho(p.name)} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: k * 0.03 }}>
+                <span className={`rank r${k + 1}`}>{k + 1}</span><SpriteFace sprite={p.sprite} size={38} />
+                <div><strong>{p.name}</strong><span>{p.wins} wins · {p.rounds} rounds · imposter {p.timesImp}×</span></div>
+                <b className="pts big">{p.points}</b><Ln d="M9 6l6 6-6 6" />
+              </motion.button>))}</div>
+          ) : (
+            <div className="lb-list">{games.map((g: any) => (
+              <div key={g.id} className="lb-row game">
+                <div><strong>{g.pack}</strong><span>{fmtDate(g.at)} · {g.rounds} round{g.rounds === 1 ? "" : "s"}{g.mode === "online" ? " · online room" : " · one phone"}</span></div>
+                <span className="lead">{g.leader}<b>{g.leaderPts}</b></span>
+              </div>))}</div>
+          )}
+        </div>
+        {hist.length > 0 && !sel && <button type="button" className="lb-clear" onClick={() => { if (confirm("Clear all saved games on this phone?")) { try { localStorage.removeItem(HIST_KEY); } catch {} setHist([]); } }}>Clear history</button>}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* =====================================================================================
+   Offline themes: when Claude can't be reached (no key on the site, or no connection), a typed
+   theme is matched against a bigger built-in library, so the theme box always gives a pack.
+   ===================================================================================== */
+const OFFLINE_PACKS: { name: string; keys: string[]; words: string[] }[] = [
+  { name: "Superheroes", keys: ["superhero", "hero", "marvel", "dc", "comic", "avenger"], words: ["Batman", "Spider-Man", "Iron Man", "Superman", "Wonder Woman", "Hulk", "Thor", "Captain America", "Black Panther", "Flash", "Aquaman", "Shaktimaan", "Krrish", "Wolverine", "Deadpool", "Doctor Strange", "Ant-Man", "Hawkeye", "Black Widow", "Joker"] },
+  { name: "Space", keys: ["space", "planet", "astronaut", "galaxy", "star", "rocket", "nasa", "isro"], words: ["Moon", "Mars", "Rocket", "Astronaut", "Black hole", "Saturn", "Comet", "Telescope", "Galaxy", "Satellite", "Alien", "Spacesuit", "Meteor", "Sun", "Jupiter", "Space station", "Eclipse", "Chandrayaan", "Milky Way", "UFO"] },
+  { name: "School days", keys: ["school", "class", "college", "exam", "teacher", "student"], words: ["Blackboard", "Homework", "Principal", "Exam", "Tiffin", "Uniform", "Library", "Recess", "Report card", "Assembly", "Lab", "Pencil box", "Bunk", "Annual day", "PT period", "Bench", "Attendance", "Notebook", "Canteen", "Holiday"] },
+  { name: "Travel", keys: ["travel", "trip", "holiday", "vacation", "tour", "road trip", "flight"], words: ["Passport", "Airport", "Suitcase", "Hotel", "Beach", "Train", "Visa", "Map", "Selfie", "Tent", "Road trip", "Backpack", "Souvenir", "Cruise", "Hill station", "Ticket", "Jet lag", "Tour guide", "Sunscreen", "Postcard"] },
+  { name: "Sports", keys: ["sport", "game", "football", "olympic", "fitness", "gym"], words: ["Football", "Badminton", "Kabaddi", "Tennis", "Chess", "Hockey", "Boxing", "Swimming", "Wrestling", "Basketball", "Marathon", "Archery", "Table tennis", "Volleyball", "Kho kho", "Golf", "Cycling", "Skating", "Javelin", "Carrom"] },
+  { name: "Music", keys: ["music", "song", "singer", "band", "festival", "concert", "instrument"], words: ["Guitar", "Tabla", "Drums", "Microphone", "Sitar", "Concert", "Playlist", "Headphones", "DJ", "Karaoke", "Violin", "Harmonium", "Flute", "Piano", "Album", "Rapper", "Dhol", "Orchestra", "Lyrics", "Encore"] },
+  { name: "Indian weddings", keys: ["wedding", "shaadi", "marriage", "baraat", "mehndi"], words: ["Mehendi", "Baraat", "Sangeet", "Sherwani", "Lehenga", "Pheras", "Mandap", "Ghodi", "Haldi", "Varmala", "Buffet", "DJ", "Band baaja", "Bidaai", "Shagun", "Photographer", "Jutta chupai", "Reception", "Pandit", "Rishtedaar"] },
+  { name: "Monsoon", keys: ["monsoon", "rain", "barish", "weather", "storm"], words: ["Umbrella", "Raincoat", "Puddle", "Thunder", "Pakora", "Chai", "Paper boat", "Rainbow", "Flood", "Gumboots", "Lightning", "Mud", "Frog", "Clouds", "Traffic jam", "Leaking roof", "Petrichor", "Drizzle", "Wet socks", "Power cut"] },
+  { name: "Video games", keys: ["video game", "gaming", "game", "console", "pubg", "minecraft"], words: ["Minecraft", "Mario", "Controller", "Fortnite", "Tetris", "Pac-Man", "Level up", "Boss fight", "Joystick", "Pokemon", "Respawn", "Headshot", "Lag", "Loot box", "Speedrun", "Zelda", "Game over", "Sonic", "Skin", "Checkpoint"] },
+  { name: "Desserts", keys: ["dessert", "sweet", "mithai", "cake", "ice cream", "chocolate"], words: ["Gulab jamun", "Rasgulla", "Kaju katli", "Brownie", "Cheesecake", "Ice cream", "Jalebi", "Kheer", "Ladoo", "Cupcake", "Donut", "Halwa", "Rasmalai", "Pastry", "Pudding", "Barfi", "Sundae", "Tiramisu", "Gajar halwa", "Waffle"] },
+  { name: "Board games", keys: ["board game", "boardgame", "cards", "chess", "ludo"], words: ["Ludo", "Chess", "Carrom", "Monopoly", "Scrabble", "Snakes and ladders", "Uno", "Jenga", "Pictionary", "Cluedo", "Poker", "Checkers", "Dice", "Taboo", "Rummy", "Business", "Sudoku", "Dominoes", "Battleship", "Bingo"] },
+  { name: "Pirates", keys: ["pirate", "ship", "sea", "ocean", "treasure"], words: ["Treasure", "Parrot", "Eye patch", "Cannon", "Plank", "Captain", "Map", "Anchor", "Island", "Sword", "Hook", "Rum", "Skull flag", "Compass", "Shipwreck", "Telescope", "Mermaid", "Storm", "Gold coin", "Kraken"] },
+  { name: "Hospital", keys: ["hospital", "doctor", "medical", "nurse", "health"], words: ["Stethoscope", "Injection", "Ambulance", "Nurse", "X-ray", "Bandage", "Surgeon", "Wheelchair", "Pills", "ICU", "Thermometer", "Cast", "Blood test", "Reception", "Mask", "Stretcher", "Vaccine", "Drip", "Dentist", "Prescription"] },
+  { name: "Wild West", keys: ["wild west", "cowboy", "western", "desert"], words: ["Cowboy", "Horse", "Saloon", "Sheriff", "Lasso", "Cactus", "Revolver", "Bandit", "Desert", "Boots", "Hat", "Train robbery", "Gold rush", "Bounty", "Tumbleweed", "Ranch", "Duel", "Wanted poster", "Stagecoach", "Campfire"] },
+  { name: "90s cartoons", keys: ["cartoon", "90s", "anime", "kids", "childhood"], words: ["Tom and Jerry", "Shinchan", "Doraemon", "Pokemon", "Scooby-Doo", "Popeye", "Mowgli", "Johnny Bravo", "Dexter", "Pikachu", "Beyblade", "Ben 10", "Oggy", "Noddy", "Swat Kats", "Courage", "Tarzan", "Chhota Bheem", "Mr. Bean", "Power Rangers"] },
+  { name: "Kitchen", keys: ["kitchen", "cooking", "chef", "food", "recipe", "cook"], words: ["Pressure cooker", "Tawa", "Rolling pin", "Fridge", "Spatula", "Mixer", "Kadai", "Masala box", "Knife", "Microwave", "Toaster", "Ladle", "Chimney", "Blender", "Grater", "Oven", "Strainer", "Plate", "Belan", "Lunchbox"] },
+  { name: "Technology", keys: ["tech", "technology", "phone", "computer", "internet", "ai", "app"], words: ["Laptop", "WiFi", "Charger", "Selfie", "Robot", "Password", "Emoji", "Bluetooth", "Smartwatch", "Cloud", "Keyboard", "Drone", "Podcast", "Meme", "Hashtag", "Battery", "Printer", "VR headset", "Spam", "Update"] },
+  { name: "Festivals", keys: ["festival", "diwali", "holi", "eid", "christmas", "celebration"], words: ["Diwali", "Holi", "Eid", "Christmas", "Navratri", "Rakhi", "Pongal", "Onam", "Lohri", "Durga Puja", "Ganesh Chaturthi", "Fireworks", "Rangoli", "Diya", "Gujiya", "Dandiya", "Kite", "Santa", "Lantern", "New Year"] },
+];
+function offlinePack(topic: string) {
+  const t = topic.toLowerCase();
+  const all = [...OFFLINE_PACKS, ...LIBRARY.map((p: any) => ({ name: p.name, keys: [p.name.toLowerCase(), ...p.name.toLowerCase().split(/\s+/)], words: p.words }))];
+  let best: any = null; let score = 0;
+  for (const p of all) {
+    const s = p.keys.reduce((n: number, k: string) => n + (t.includes(k) ? k.length + 2 : k.split(/\s+/).some((w) => w.length > 3 && t.includes(w.slice(0, -1))) ? 1 : 0), 0) + (t.includes(p.name.toLowerCase()) ? 6 : 0);
+    if (s > score) { score = s; best = p; }
+  }
+  return best ? { name: best.name, words: best.words, icon: "spark" } : null;
+}
+
+/* ---------- scan a room QR from inside the app (where the browser can read QR codes) ---------- */
+function QRScanner({ onCode, onClose }: { onCode: (c: string) => void; onClose: () => void }) {
+  const vid = useRef<HTMLVideoElement>(null); const [err, setErr] = useState("");
+  useEffect(() => {
+    let stream: MediaStream | null = null; let raf = 0; let alive = true;
+    (async () => {
+      try {
+        const Det = (window as any).BarcodeDetector; if (!Det) throw new Error("unsupported");
+        const det = new Det({ formats: ["qr_code"] });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        if (!vid.current) return; vid.current.srcObject = stream; await vid.current.play();
+        const loop = async () => {
+          if (!alive || !vid.current) return;
+          try { const found = await det.detect(vid.current); const raw = found?.[0]?.rawValue as string | undefined;
+            if (raw) { const m = raw.match(/[?&]room=([A-Za-z]{4})/) || raw.match(/^([A-Za-z]{4})$/); if (m) { onCode(m[1].toUpperCase()); return; } } } catch {}
+          raf = requestAnimationFrame(loop);
+        };
+        loop();
+      } catch (e: any) { setErr(e?.message === "unsupported" ? "This browser can’t scan inside the app. Open your phone’s camera app and point it at the QR instead." : "Camera access was blocked. Allow the camera, or type the code."); }
+    })();
+    return () => { alive = false; cancelAnimationFrame(raf); stream?.getTracks().forEach((t) => t.stop()); };
+  }, []);
+  return (
+    <div className="scanner">
+      {err ? <p className="net-err">{err}</p> : <><video ref={vid} playsInline muted /><span className="scan-frame" aria-hidden="true" /><span className="scan-tip">Point at the host’s QR</span></>}
+      <button type="button" className="btn light" onClick={onClose}>Close camera</button>
     </div>
   );
 }
@@ -2215,6 +2424,14 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
     return null;
   })();
 
+  const gid = useRef(newGameId());
+  useEffect(() => { if (v?.phase === "deal" && v?.round === 1) gid.current = newGameId(); }, [v?.phase, v?.round]);
+  useEffect(() => {
+    if (v?.phase !== "results" || v.imposter == null) return;
+    recordRound({ game: `${v.code}-${gid.current}`, mode: "online", pack: v.packName, round: v.round, word: v.word, imposter: nm(v.imposter), outcome: v.outcome,
+      players: P.map((p: any, k: number) => ({ name: p.name, sprite: p.sprite, points: v.points?.[k] ?? 0, total: p.score })) });
+  }, [v?.phase, v?.round]);
+  const [scan, setScan] = useState(false);
   const cheer = v?.phase === "results";
   return (
     <div className="frame center-stage glass">
@@ -2233,6 +2450,8 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
               <h2 className="title">{role === "host" ? "Open a room for everyone’s phones" : startCode ? `Join room ${startCode}` : "Join your friends’ room"}</h2>
               <p className="muted">{role === "host" ? "Friends join with a code, a QR scan or a link. Same Wi-Fi, your hotspot, or anywhere online all work." : "Ask the host for the 4-letter code, or scan their QR."}</p>
               <label className="field"><span>Your name</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={14} placeholder="e.g. Aarav" autoFocus /></label>
+              {role === "guest" && scan && <QRScanner onCode={(c) => { setCode(c); setScan(false); setToast(`Found room ${c}`); }} onClose={() => setScan(false)} />}
+              {role === "guest" && !scan && <button type="button" className="btn light scan-btn" onClick={() => setScan(true)}><Ln d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10" />Scan the host’s QR</button>}
               {role === "guest" && <label className="field"><span>Room code</span><input className="code-in" value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))} placeholder="ABCD" inputMode="text" autoCapitalize="characters" /></label>}
               {err && <p className="net-err" role="alert">{err}</p>}
               <button type="submit" className="go wide" disabled={stage === "connecting"}>{stage === "connecting" ? <><DotLoaderMini />Connecting…</> : role === "host" ? "Open the room" : "Join"}<Ln d="M5 12h14M13 6l6 6-6 6" /></button>
