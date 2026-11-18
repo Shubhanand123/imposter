@@ -726,12 +726,52 @@ button.lb-row { cursor: pointer } button.lb-row:hover { border-color: var(--wate
 .scanner video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 18px; background: #000 }
 .scan-frame { position: absolute; left: 50%; top: calc(50% - 22px); width: 58%; aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px solid rgba(255,255,255,.9); border-radius: 18px; box-shadow: 0 0 0 999px rgba(0,0,0,.25); pointer-events: none }
 .scan-tip { position: absolute; left: 0; right: 0; top: 12px; text-align: center; color: #fff; font-weight: 600; font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,.6) }
+
+/* ---------- splash ---------- */
+.splash { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 14px; background: linear-gradient(#8ADBE8, #4FB9CF); color: #0B4757; font-family: var(--display) }
+.splash strong { font-weight: 800; letter-spacing: .3em; font-size: 18px } .splash strong b { color: #E5484D }
+.splash-sub { font: 500 13px var(--body); opacity: .8 }
+.splash-ring { position: relative; width: 72px; height: 72px; border-radius: 50%; border: 6px solid #fff; overflow: hidden; display: grid; place-items: center }
+.splash-ring::after { content: ""; position: absolute; left: -50%; right: -50%; bottom: -10%; height: 55%; background: rgba(11,71,87,.25); border-radius: 42%; animation: splash-w 2.2s linear infinite }
+.splash-ring i { width: 18px; height: 18px; border-radius: 50%; background: #E5484D; position: relative; z-index: 1 }
+@keyframes splash-w { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+
+/* ---------- brand bar buttons ---------- */
+.brand-btns { display: inline-flex; gap: 8px; pointer-events: auto }
+.trophy.help { padding: 7px; width: 34px; justify-content: center }
+
+/* ---------- how to play ---------- */
+.howto-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; overflow-y: auto }
+.howto-list li { display: flex; gap: 12px; padding: 12px; border-radius: 16px; background: #fff; border: 1px solid var(--line) }
+.howto-list li > div { display: grid; gap: 2px } .howto-list strong { font-size: 15px } .howto-list span { font-size: 13px; color: var(--muted) }
+.hi { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--ink); color: #fff }
+.hi svg { width: 19px; height: 19px }
+.howto-modes { display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px; background: #EEF7F8; font-size: 13px; color: #34444B }
+.howto-modes strong { font-size: 14px; color: var(--ink) }
+
+/* ---------- nearby rooms + connection badges ---------- */
+.nearby { display: grid; gap: 8px; padding: 12px; border-radius: 18px; background: rgba(255,255,255,.55) }
+.nearby-head { display: flex; justify-content: space-between; align-items: center; gap: 8px }
+.nearby-head .label { display: inline-flex; align-items: center; gap: 6px } .nearby-head .label svg { width: 15px; height: 15px }
+.nearby-re { border: 0; background: none; font: 600 12.5px var(--body); color: var(--water); cursor: pointer } .nearby-re:disabled { opacity: .5 }
+.near-empty { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); padding: 4px 2px }
+.near-room { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 14px; border: 1.5px solid var(--water); background: #fff; cursor: pointer; text-align: left; font-family: var(--body); color: var(--ink) }
+.near-room > div { flex: 1; min-width: 0; display: grid } .near-room strong { font-size: 15px } .near-room span { font-size: 12px; color: var(--muted) }
+.near-room > svg { width: 16px; height: 16px; color: var(--water) }
+.nr-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: #E3F4F1; color: var(--ok) } .nr-ico svg { width: 18px; height: 18px }
+.nr-code { font: 800 14px var(--display); letter-spacing: .12em; color: var(--water) }
+.netb { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px }
+.netb svg { width: 13px; height: 13px }
+.netb.local { background: #E3F4F1; color: var(--ok) } .netb.online { background: #E6F0FB; color: #2563A8 } .netb.wait { background: var(--chip); color: var(--muted) }
+.net-sum { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted) }
+.net-sum span { display: inline-flex; align-items: center; gap: 6px }
+.dot { width: 8px; height: 8px; border-radius: 50% } .dot.local { background: var(--ok) } .dot.online { background: #2563A8 }
 @media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
 </style>
 </head>
 <body>
 
-<div id="root"><p class="boot">Loading…</p></div>
+<div id="root"><div class="splash"><span class="splash-ring"><i></i></span><strong>IMP<b>O</b>STER</strong><span class="splash-sub">Filling the tank…</span></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.0.17/dist/index.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
@@ -1405,6 +1445,8 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
   const [newName, setNewName] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [showLb, setShowLb] = useState(false);
+  const [showHow, setShowHow] = useState(() => { try { return !localStorage.getItem("imposter-seen-howto"); } catch { return false; } });
+  const closeHow = () => { setShowHow(false); try { localStorage.setItem("imposter-seen-howto", "1"); } catch {} };
   const [open, setOpen] = useState(1);
   const [seen, setSeen] = useState<number[]>([1]);
   const goTo = (n: number) => { setOpen((o) => (o === n ? 0 : n)); setSeen((v) => (v.includes(n) ? v : [...v, n])); };
@@ -1503,7 +1545,7 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
         <div className="visitors" aria-hidden="true"><CrowdCanvas src="crowd@2x.png" rows={15} cols={4} pixelRatio={crowdScale} /></div>
         <motion.div className="brand gutter" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
           <span className="mark">IMP<i>O</i>STER</span>
-          <button type="button" className="trophy" onClick={() => setShowLb(true)}><Ln d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /><span>Leaderboard</span></button>
+          <span className="brand-btns"><button type="button" className="trophy help" onClick={() => setShowHow(true)} aria-label="How to play"><Ln d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18" /></button><button type="button" className="trophy" onClick={() => setShowLb(true)}><Ln d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /><span>Leaderboard</span></button></span>
         </motion.div>
       </section>
 
@@ -1621,6 +1663,7 @@ function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role:
       <AnimatePresence>
         {toast && <motion.div className="toast" role="status" initial={{ y: 30, opacity: 0, x: "-50%" }} animate={{ y: 0, opacity: 1, x: "-50%" }} exit={{ y: 20, opacity: 0, x: "-50%" }}>{toast}</motion.div>}
         {showLb && <Leaderboard key="lb" onClose={() => setShowLb(false)} />}
+        {showHow && <HowTo key="how" onClose={closeHow} />}
       </AnimatePresence>
     </div>
   );
@@ -2103,6 +2146,32 @@ function summarize(h: any[]) {
 }
 const fmtDate = (t: number) => { try { return new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short" }) + " · " + new Date(t).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); } catch { return ""; } };
 
+function HowTo({ onClose }: { onClose: () => void }) {
+  const steps = [
+    ["M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z", "Everyone gets a card", "All but one player see the same secret word. The imposter only sees the category, or nothing."],
+    ["M4 6h16M4 12h10M4 18h7", "One clue each", "Go round and say one word linked to the secret word. Too obvious helps the imposter; too vague looks suspicious."],
+    ["M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11", "Vote", "Vote for who you think the imposter is: secretly on phones, or out loud as a table."],
+    ["M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z", "Score", "Catch the imposter and the crew scores. Escape, or name the word on the last chance, and the imposter scores."],
+  ];
+  return (
+    <motion.div className="lb-scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+      <motion.div className="lb howto" role="dialog" aria-modal="true" aria-label="How to play" onClick={(e) => e.stopPropagation()}
+        initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+        <header className="lb-head"><span className="lb-trophy"><Ln d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18" /></span>
+          <div><strong>How to play</strong><span>3 to 12 players · about 5 minutes a round</span></div>
+          <button type="button" className="lb-x" onClick={onClose} aria-label="Close"><Ln d="M7 7l10 10M17 7 7 17" /></button></header>
+        <ol className="howto-list">{steps.map(([d, t, b], k) => (
+          <motion.li key={t} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 * k }}>
+            <span className="hi"><Ln d={d} /></span><div><strong>{k + 1}. {t}</strong><span>{b}</span></div></motion.li>))}</ol>
+        <div className="howto-modes"><strong>Three ways to play</strong>
+          <span><b>This phone</b> · pass one phone round the table.</span>
+          <span><b>Host a room</b> · everyone uses their own phone. Friends on your Wi-Fi or hotspot see your room straight away in Join a room; anyone else joins with the code, QR or link.</span></div>
+        <button type="button" className="go wide" onClick={onClose}>Got it</button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function Leaderboard({ onClose }: { onClose: () => void }) {
   const [hist, setHist] = useState(loadHistory);
   const [tab, setTab] = useState<"players" | "games">("players");
@@ -2230,6 +2299,21 @@ const ROOM_PREFIX = "imposter-party-room-";
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
 const makeCode = () => Array.from({ length: 4 }, () => CODE_CHARS[rnd(CODE_CHARS.length)]).join("");
 const joinLink = (code: string) => `${location.origin}${location.pathname}?room=${code}`;
+const NEAR_PREFIX = "imposter-party-near-";
+let netKeyP: Promise<string> | null = null;
+/** Same Wi-Fi or hotspot = same short network code (from /api/net). Empty when it can't be found. */
+const getNetKey = () => (netKeyP ??= fetch("/api/net", { cache: "no-store" }).then((r) => r.json()).then((j) => String(j?.key || "")).catch(() => ""));
+/** Ask WebRTC how a connection actually travels: "local" when both ends are on the same network. */
+async function routeOf(cn: any): Promise<"local" | "online" | ""> {
+  try {
+    const st = await cn?.peerConnection?.getStats(); if (!st) return "";
+    let pair: any = null; st.forEach((r: any) => { if (r.type === "transport" && r.selectedCandidatePairId) pair = st.get(r.selectedCandidatePairId); });
+    if (!pair) st.forEach((r: any) => { if (r.type === "candidate-pair" && (r.nominated || r.selected) && r.state === "succeeded") pair = r; });
+    if (!pair) return "";
+    const l = st.get(pair.localCandidateId), rm = st.get(pair.remoteCandidateId);
+    return l?.candidateType === "host" && rm?.candidateType === "host" ? "local" : "online";
+  } catch { return ""; }
+}
 const loadName = () => { try { return localStorage.getItem("imposter-name") || ""; } catch { return ""; } };
 const saveName = (n: string) => { try { localStorage.setItem("imposter-name", n); } catch {} };
 
@@ -2247,7 +2331,7 @@ function createHost(cfg: any, code: string, push: (v: any) => void) {
   let tick: any = null;
   const used = () => S.players.map((p: any) => p.sprite);
   const addPlayer = (id: string, name: string, conn: any) => {
-    const p = { id, name: name.slice(0, 14) || `Player ${S.players.length + 1}`, sprite: nextSprite(S.players), conn, online: true, ready: false, score: 0 };
+    const p = { id, name: name.slice(0, 14) || `Player ${S.players.length + 1}`, sprite: nextSprite(S.players), conn, online: true, ready: false, score: 0, net: id === "host" ? "host" : "" };
     S.players.push(p); return p;
   };
   const tally = () => S.players.map((_: any, k: number) => Object.values(S.votes).filter((v) => v === k).length);
@@ -2258,7 +2342,7 @@ function createHost(cfg: any, code: string, push: (v: any) => void) {
     return {
       code: S.code, phase: S.phase, me: i, isHost: p.id === "host", round: S.round, packName: S.pack.name,
       rules: { hint: S.rules.hint, last: S.rules.last, timer: S.rules.timer, outLoud: S.rules.outLoud, secs: S.rules.secs },
-      players: S.players.map((q: any, k: number) => ({ name: q.name, sprite: q.sprite, online: q.online, ready: q.ready, voted: S.votes[k] !== undefined, score: q.score })),
+      players: S.players.map((q: any, k: number) => ({ name: q.name, sprite: q.sprite, net: q.net, online: q.online, ready: q.ready, voted: S.votes[k] !== undefined, score: q.score })),
       role: playing ? (isImp ? "imposter" : "crew") : null,
       word: (playing && !isImp) || S.phase === "results" ? S.word : null,
       hint: isImp ? (S.rules.hint ? S.pack.name : null) : S.pack.name,
@@ -2317,13 +2401,14 @@ function createHost(cfg: any, code: string, push: (v: any) => void) {
     }
     broadcast();
   };
-  const hello = (conn: any, name: string) => {
+  const hello = (conn: any, name: string, key = "") => {
     const clean = String(name || "").trim().slice(0, 14);
+    const tag = (p: any) => { p.net = key && S.netKey && key === S.netKey ? "local" : "online"; setTimeout(async () => { const r = await routeOf(conn); if (r === "local" && p.net !== "local") { p.net = "local"; broadcast(); } }, 1500); };
     const back = S.players.find((q: any) => !q.online && q.id !== "host" && q.name.toLowerCase() === clean.toLowerCase());
-    if (back) { back.conn = conn; back.online = true; back.id = conn.peer; broadcast(); return; }
+    if (back) { back.conn = conn; back.online = true; back.id = conn.peer; tag(back); broadcast(); return; }
     if (S.phase !== "lobby") { conn.send({ t: "refused", why: "The game has already started. Ask the host to let you in next round." }); return; }
     if (S.players.length >= 12) { conn.send({ t: "refused", why: "This room is full (12 players)." }); return; }
-    addPlayer(conn.peer, clean, conn); broadcast();
+    tag(addPlayer(conn.peer, clean, conn)); broadcast();
   };
   const drop = (conn: any) => { const p = S.players.find((q: any) => q.conn === conn); if (!p) return; if (S.phase === "lobby") S.players.splice(S.players.indexOf(p), 1); else p.online = false; if (S.phase === "vote" && allVoted()) toReveal(); broadcast(); };
   return { S, addPlayer, act, hello, drop, broadcast, stop: () => clearTimeout(tick) };
@@ -2338,10 +2423,11 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
   const [got, setGot] = useState(0);
   const [, setNow] = useState(0);
   const [crowdScale] = useState(() => (window.innerWidth >= 900 ? 1.25 : 2));
-  const peer = useRef<any>(null); const conn = useRef<any>(null); const host = useRef<any>(null);
+  const peer = useRef<any>(null); const conn = useRef<any>(null); const host = useRef<any>(null); const nearPeer = useRef<any>(null);
+  const [near, setNear] = useState<any[] | null>(null); const [nearOk, setNearOk] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 2400); return () => clearTimeout(t); }, [toast]);
-  useEffect(() => () => { host.current?.stop(); try { peer.current?.destroy(); } catch {} }, []);
+  useEffect(() => () => { host.current?.stop(); try { peer.current?.destroy(); } catch {} try { nearPeer.current?.destroy(); } catch {} }, []);
   useEffect(() => { if (v?.phase !== "clues" || !v?.rules.timer) return; const t = setInterval(() => setNow((n) => n + 1), 250); return () => clearInterval(t); }, [v?.phase, v?.rules?.timer]);
   const Peer = (window as any).Peer;
 
@@ -2354,8 +2440,18 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
     const p = new Peer(ROOM_PREFIX + c); peer.current = p;
     p.on("open", () => {
       setCode(c); const h = createHost(cfg, c, receive); host.current = h; h.addPlayer("host", name.trim(), null); setStage("in"); h.broadcast();
+      getNetKey().then((key) => {
+        h.S.netKey = key; if (!key) return;
+        const listen = (slot: number) => {
+          if (slot > 5 || !peer.current) return;
+          const np = new Peer(`${NEAR_PREFIX}${key}-${slot}`); nearPeer.current = np;
+          np.on("error", (e: any) => { if (e?.type === "unavailable-id") { try { np.destroy(); } catch {} listen(slot + 1); } });
+          np.on("connection", (cn: any) => cn.on("open", () => { try { cn.send({ t: "near", code: c, host: name.trim(), count: h.S.players.filter((q: any) => q.online).length, pack: cfg.pack.name, playing: h.S.phase !== "lobby" }); } catch {} setTimeout(() => { try { cn.close(); } catch {} }, 800); }));
+        };
+        listen(0);
+      });
       p.on("connection", (cn: any) => {
-        cn.on("data", (m: any) => { if (m?.t === "hello") h.hello(cn, m.name); else { const pl = h.S.players.find((q: any) => q.conn === cn); if (pl) h.act(pl.id, m); } });
+        cn.on("data", (m: any) => { if (m?.t === "hello") h.hello(cn, m.name, m.key); else { const pl = h.S.players.find((q: any) => q.conn === cn); if (pl) h.act(pl.id, m); } });
         cn.on("close", () => h.drop(cn)); cn.on("error", () => h.drop(cn));
       });
     });
@@ -2365,14 +2461,24 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
       setStage("error"); setErr("Couldn’t open a room. Check the internet connection (a phone hotspot works too) and try again.");
     });
   };
-  const joinRoom = () => {
-    const c = code.trim().toUpperCase(); if (c.length < 4) { setErr("Enter the 4-letter room code."); return; }
+  const scanNear = async () => {
+    setNear(null);
+    const key = await getNetKey(); if (!key || !Peer) { setNearOk(false); setNear([]); return; }
+    setNearOk(true); const found: any[] = [];
+    const probe = new Peer();
+    probe.on("error", () => {});
+    probe.on("open", () => { for (let s2 = 0; s2 < 6; s2++) { const cn = probe.connect(`${NEAR_PREFIX}${key}-${s2}`); cn.on("data", (m: any) => { if (m?.t === "near" && !found.some((f) => f.code === m.code)) { found.push(m); setNear([...found]); } }); } });
+    setTimeout(() => { try { probe.destroy(); } catch {} setNear([...found]); }, 4000);
+  };
+  useEffect(() => { if (role === "guest" && !startCode) scanNear(); }, []);
+  const joinRoom = (forced?: string) => {
+    const c = (forced ?? code).trim().toUpperCase(); if (c.length < 4) { setErr("Enter the 4-letter room code."); return; }
     setStage("connecting"); setErr("");
     if (!Peer) { setStage("error"); setErr("Couldn’t load the room service. Check the internet connection and try again."); return; }
     const p = new Peer(); peer.current = p;
     p.on("open", () => {
       const cn = p.connect(ROOM_PREFIX + c, { reliable: true }); conn.current = cn;
-      cn.on("open", () => cn.send({ t: "hello", name: name.trim() }));
+      cn.on("open", async () => cn.send({ t: "hello", name: name.trim(), key: await getNetKey() }));
       cn.on("data", (m: any) => {
         if (m?.t === "view") { receive(m.v); setStage("in"); }
         else if (m?.t === "refused") { setStage("error"); setErr(m.why); }
@@ -2384,7 +2490,7 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
   };
   const stageRef = useRef(stage); stageRef.current = stage;
   const go = (e?: any) => { e?.preventDefault(); if (!name.trim()) { setErr("Type your name first."); return; } saveName(name.trim()); role === "host" ? openRoom() : joinRoom(); };
-  const leave = () => { host.current?.stop(); try { peer.current?.destroy(); } catch {} onMenu(); };
+  const leave = () => { host.current?.stop(); try { peer.current?.destroy(); } catch {} try { nearPeer.current?.destroy(); } catch {} onMenu(); };
   const share = async () => {
     const url = joinLink(code);
     try { if ((navigator as any).share) { await (navigator as any).share({ title: "Join my Imposter room", text: `Room ${code}`, url }); return; } } catch { return; }
@@ -2453,6 +2559,20 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
               {role === "guest" && scan && <QRScanner onCode={(c) => { setCode(c); setScan(false); setToast(`Found room ${c}`); }} onClose={() => setScan(false)} />}
               {role === "guest" && !scan && <button type="button" className="btn light scan-btn" onClick={() => setScan(true)}><Ln d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10" />Scan the host’s QR</button>}
               {role === "guest" && <label className="field"><span>Room code</span><input className="code-in" value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))} placeholder="ABCD" inputMode="text" autoCapitalize="characters" /></label>}
+              {role === "guest" && !startCode && (
+                <div className="nearby">
+                  <div className="nearby-head"><span className="label"><Ln d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />Rooms on your Wi-Fi or hotspot</span>
+                    <button type="button" className="nearby-re" onClick={scanNear} disabled={near === null}>{near === null ? "Looking…" : "Refresh"}</button></div>
+                  {near === null ? <div className="near-empty"><DotLoaderMini />Looking for rooms nearby…</div>
+                    : near.length === 0 ? <div className="near-empty">{nearOk ? "No rooms found on this network yet. Ask the host to open one, or use the code." : "Can’t check this network right now. Use the code or the QR."}</div>
+                    : near.map((r: any) => (
+                      <motion.button key={r.code} type="button" className="near-room" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                        onClick={() => { if (!name.trim()) { setCode(r.code); setErr("Type your name, then tap the room again."); return; } saveName(name.trim()); setCode(r.code); joinRoom(r.code); }}>
+                        <span className="nr-ico"><Ln d="M5 12.55a11 11 0 0 1 14.08 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" /></span>
+                        <div><strong>{r.host}’s room</strong><span>{r.count} in the room · {r.pack}{r.playing ? " · playing" : ""}</span></div>
+                        <b className="nr-code">{r.code}</b><Ln d="M9 6l6 6-6 6" />
+                      </motion.button>))}
+                </div>)}
               {err && <p className="net-err" role="alert">{err}</p>}
               <button type="submit" className="go wide" disabled={stage === "connecting"}>{stage === "connecting" ? <><DotLoaderMini />Connecting…</> : role === "host" ? "Open the room" : "Join"}<Ln d="M5 12h14M13 6l6 6-6 6" /></button>
             </form>
@@ -2472,10 +2592,15 @@ function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg
                         <button type="button" className="btn light share-btn" onClick={share}><Ln d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13" />Share link</button></div>
                     </div>}
                     {!isHost && <div className="lobby-wait"><DotLoaderMini /><span>Waiting for the host to start…</span></div>}
+                    {P.length > 1 && <div className="net-sum">
+                      <span><i className="dot local" />{P.filter((p: any, k: number) => k > 0 && p.net === "local").length} on the same Wi-Fi or hotspot</span>
+                      <span><i className="dot online" />{P.filter((p: any, k: number) => k > 0 && p.net === "online").length} online</span></div>}
                     <div className="roster-list">
                       <AnimatePresence initial={false}>{P.map((p: any, k: number) => (
                         <motion.div key={p.name + k} layout className="pl net-pl" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}>
                           <SpriteFace sprite={p.sprite} size={34} /><strong>{p.name}{k === 0 && <em>host</em>}{k === me && k !== 0 && <em className="you">you</em>}</strong>
+                          {k > 0 && <span className={`netb ${p.net || "wait"}`} title={p.net === "local" ? "Connected on the same Wi-Fi or hotspot" : "Connected over the internet"}>
+                            <Ln d={p.net === "local" ? "M5 12.55a11 11 0 0 1 14.08 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" : "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"} />{p.net === "local" ? "Same Wi-Fi" : p.net === "online" ? "Online" : "Checking"}</span>}
                           {isHost && k > 0 && <button type="button" className="pl-x" onClick={() => send({ t: "kick", index: k })} aria-label={`Remove ${p.name}`}><Ln d="M7 7l10 10M17 7 7 17" /></button>}
                         </motion.div>))}</AnimatePresence>
                     </div>
