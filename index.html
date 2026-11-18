@@ -593,6 +593,39 @@ body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 15px; 
 .lobby-note { padding: 14px; border-radius: 14px; background: #EEF7F8; gap: 4px }
 .lobby-note strong { font-size: 14.5px } .lobby-note span { font-size: 13px; color: var(--muted) }
 .pl-face:focus-visible, .pl-x:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 1px }
+
+/* ---------- rules, polished ---------- */
+.num, .num * { color: #fff !important }
+.rules-label { display: block; margin: 6px 0 2px }
+.setting { display: block; padding: 0; cursor: default; border-radius: 16px; transition: background .3s }
+.setting + .setting { border-top: 0; margin-top: 6px }
+.setting > .setting-row { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 10px; cursor: pointer; border-radius: 16px; background: #F7F6F2; border: 1px solid transparent; transition: background .3s, border-color .3s }
+.setting.is-on .setting-row { background: #fff; border-color: var(--line); box-shadow: 0 6px 16px -14px rgba(11,71,87,.5) }
+.set-ico { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: #ECEAE4; color: #8A867E; transition: background .3s, color .3s }
+.set-ico svg { width: 19px; height: 19px }
+.setting.is-on .set-ico { background: var(--ink); color: #fff }
+.set-txt { flex: 1; min-width: 0; display: grid; gap: 2px }
+.set-txt strong { font-size: 15px; font-weight: 600 }
+.set-txt span { font-size: 12.5px; color: var(--muted) }
+.setting > .set-extra { display: block; overflow: hidden }
+.timer-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; margin: 8px 2px 4px; border-radius: 12px; background: var(--chip) }
+.timer-chips button { position: relative; border: 0; background: none; padding: 9px 0; border-radius: 9px; cursor: pointer; font: 600 13px var(--body); color: var(--muted) }
+.timer-chips button[aria-checked="true"] { color: #fff }
+.timer-chips b { position: relative; z-index: 1; font-weight: inherit }
+.tchip { position: absolute; inset: 0; border-radius: 9px; background: var(--ink) }
+.timer-chips button:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 1px }
+.seg button { grid-template-columns: auto; justify-items: center; gap: 2px; padding: 12px 8px }
+.seg button .ln { width: 20px; height: 20px; margin-bottom: 2px; color: #A8A49B; transition: color .3s }
+.seg button[aria-pressed="true"] .ln { color: var(--ink) }
+
+/* switch fixes: no wave peeking out at rest, a neutral off track */
+.switch { background: #E4E2DC; box-shadow: inset 0 1px 3px rgba(0,0,0,.12) }
+.switch .fill { transform: translateY(135%) }
+.switch[aria-checked="false"]:hover .fill { transform: translateY(66%) }
+.switch[aria-checked="true"] .fill { transform: translateY(0) }
+.switch[aria-checked="true"]:not(:hover) .fill:not(.surge)::before, .switch[aria-checked="true"]:not(:hover) .fill:not(.surge)::after { opacity: 0; transition: opacity .4s }
+.switch[aria-checked="false"]:not(:hover) .fill:not(.drain) { visibility: hidden; transition: transform .5s, visibility 0s .5s }
+.switch .off { color: #8A867E }
 @media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
 </style>
 </head>
@@ -1149,11 +1182,18 @@ function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
   );
 }
 
-function Setting({ title, sub, on, onChange }: { title: string; sub: string; on: boolean; onChange: (v: boolean) => void }) {
+function Setting({ title, sub, on, onChange, icon, children }: { title: string; sub: string; on: boolean; onChange: (v: boolean) => void; icon?: string; children?: any }) {
+  // tapping anywhere on the row flips the switch, with the same water surge as tapping the switch itself
   return (
-    <div className="setting" onClick={() => onChange(!on)}>
-      <div><strong>{title}</strong><span>{sub}</span></div>
-      <Switch on={on} onChange={onChange} label={title} />
+    <div className={`setting ${on ? "is-on" : ""}`}>
+      <div className="setting-row" onClick={(e) => { if (!(e.target as HTMLElement).closest(".switch")) (e.currentTarget.querySelector(".switch") as HTMLButtonElement)?.click(); }}>
+        {icon && <span className="set-ico"><Ln d={icon} /></span>}
+        <div className="set-txt"><strong>{title}</strong><span>{sub}</span></div>
+        <Switch on={on} onChange={onChange} label={title} />
+      </div>
+      <AnimatePresence initial={false}>
+        {on && children && <motion.div className="set-extra" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease }}>{children}</motion.div>}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1338,7 +1378,7 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
   };
   const surprise = () => generate(SURPRISE_THEMES[Math.floor(Math.random() * SURPRISE_THEMES.length)]);
   const live = current ? current.words.length - skip.length : 0;
-  const ruleNames = [rules.hint && "hint", rules.last && "last guess", rules.timer && "timer"].filter(Boolean).join(", ");
+  const ruleNames = [rules.hint && "hint", rules.last && "last guess", rules.timer && `${(rules.secs ?? 120) / 60} min timer`].filter(Boolean).join(", ");
   const done = [!!current, seen.includes(3), seen.includes(3)];
   const progress = done.filter(Boolean).length;
   const ruleCount = Object.values(rules).filter(Boolean).length;
@@ -1381,15 +1421,24 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
             summary={`${vote === 0 ? "Votes on phones" : "Votes out loud"}${ruleNames ? ` · ${ruleNames}` : ""}`} onNext={() => goTo(3)} nextLabel="Continue">
             <div className="seg morph" data-morph data-v={vote} role="group" aria-label="Voting">
               <div className="pill" />
-              {[["Vote on phones", "Secret ballots"], ["Vote out loud", "Table decides"]].map(([t, s], i) => (
-                <button key={t} type="button" aria-pressed={vote === i} onClick={() => setVote(i)}><strong>{t}</strong><span>{s}</span></button>
+              {[["Vote on phones", "Secret, one by one", "M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2"], ["Vote out loud", "The table decides", "M8 8a3 3 0 1 0 0 .01M16 8a3 3 0 1 0 0 .01M3 20c.6-3 2.6-5 5-5s4.4 2 5 5M11 20c.6-3 2.6-5 5-5s4.4 2 5 5"]].map(([t, s, d], i) => (
+                <button key={t} type="button" aria-pressed={vote === i} onClick={() => setVote(i)}><Ln d={d} /><strong>{t}</strong><span>{s}</span></button>
               ))}
               <span className="lens" />
             </div>
             <div>
-              <Setting title="Imposter gets a hint" sub="They see the category, not the word" on={rules.hint} onChange={(v) => setRules({ ...rules, hint: v })} />
-              <Setting title="Last-chance guess" sub="A caught imposter can steal the round" on={rules.last} onChange={(v) => setRules({ ...rules, last: v })} />
-              <Setting title="Clue timer" sub="Two minutes to give clues" on={rules.timer} onChange={(v) => setRules({ ...rules, timer: v })} />
+              <span className="label rules-label">During the round</span>
+              <Setting icon="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z" title="Imposter gets a hint" sub={rules.hint ? "They see the category, not the word" : "They see nothing at all. Harder."} on={rules.hint} onChange={(v) => setRules({ ...rules, hint: v })} />
+              <Setting icon="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" title="Last-chance guess" sub={rules.last ? "A caught imposter can still steal the round" : "Caught means caught. Crew wins."} on={rules.last} onChange={(v) => setRules({ ...rules, last: v })} />
+              <Setting icon="M12 7v5l3 2M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18" title="Clue timer" sub={rules.timer ? `${(rules.secs ?? 120) / 60} minute${(rules.secs ?? 120) === 60 ? "" : "s"} for clues` : "Talk as long as you like"} on={rules.timer} onChange={(v) => setRules({ ...rules, timer: v })}>
+                <div className="timer-chips" role="radiogroup" aria-label="Clue time">
+                  {[60, 120, 180, 300].map((t) => (
+                    <button key={t} type="button" role="radio" aria-checked={(rules.secs ?? 120) === t} onClick={() => setRules({ ...rules, secs: t })}>
+                      {(rules.secs ?? 120) === t && <motion.i layoutId="tchip" className="tchip" transition={{ type: "spring", stiffness: 500, damping: 34 }} />}<b>{t / 60} min</b>
+                    </button>
+                  ))}
+                </div>
+              </Setting>
             </div>
           </Step>
 
@@ -1598,7 +1647,7 @@ function Game({ onMenu }: { onMenu: () => void }) {
   const [handed, setHanded] = useState(false);
   const [seen, setSeen] = useState(false);
   const [speaker, setSpeaker] = useState(0);
-  const TOTAL = 120;
+  const TOTAL = RULES.secs ?? 120;
   const [left, setLeft] = useState(TOTAL);
   const [running, setRunning] = useState(false);
   const [votes, setVotes] = useState<Record<number, number>>({});
