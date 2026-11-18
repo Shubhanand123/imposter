@@ -566,6 +566,25 @@ body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 15px; 
 @keyframes sw-drain { 0% { transform: translateY(0) } 25% { transform: translateY(-10%) } 100% { transform: translateY(112%) } }
 .switch:hover:not([aria-checked="true"]) .off { color: #5B6168 }
 @media (prefers-reduced-motion: reduce) { .switch .fill.surge, .switch .fill.drain { animation: none } }
+
+/* ---------- players ---------- */
+.roster { display: grid; gap: 10px; margin-top: 4px }
+.roster-head { display: flex; justify-content: space-between; align-items: center }
+.need { font-size: 12px; font-weight: 600; color: var(--accent) }
+.roster-list { display: grid; gap: 6px }
+.pl { display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 5px; border-radius: 14px; background: #fff; border: 1px solid var(--line) }
+.pl-face { border: 0; padding: 0; background: none; border-radius: 50%; cursor: pointer; display: grid }
+.pl input { flex: 1; min-width: 0; border: 0; background: none; font: 600 15px var(--body); color: var(--ink); padding: 8px 4px; outline: none; border-radius: 8px }
+.pl input:focus-visible { box-shadow: 0 0 0 2px #7FB8C6 }
+.pl-x { border: 0; background: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #9A968E; cursor: pointer }
+.pl-x:hover { background: var(--chip); color: var(--accent) }
+.pl-x svg { width: 16px; height: 16px }
+.pl-add { display: flex; gap: 8px }
+.pl-add input { flex: 1; min-width: 0; border: 1.5px dashed #CFCBC2; border-radius: 12px; padding: 11px 12px; font: 500 15px var(--body); background: transparent; color: var(--ink) }
+.pl-add input:focus { outline: none; border-style: solid; border-color: var(--water) }
+.lobby-note { padding: 14px; border-radius: 14px; background: #EEF7F8; gap: 4px }
+.lobby-note strong { font-size: 14.5px } .lobby-note span { font-size: 13px; color: var(--muted) }
+.pl-face:focus-visible, .pl-x:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 1px }
 @media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
 </style>
 </head>
@@ -1222,6 +1241,7 @@ function Step({ n, title, sub, summary, open, done, onToggle, onNext, nextLabel,
   );
 }
 
+const nextSprite = (taken: any[], after = -1) => { const used = new Set(taken.map((p) => p.sprite)); for (let k = 1; k <= 60; k++) { const c = (after + k * 7 + 60) % 60; if (!used.has(c)) return c; } return (after + 1) % 60; };
 function Home({ onStart }: { onStart: (cfg: any) => void }) {
   const [pack, setPack] = useState<any>(() => LAST?.pack ?? { kind: "library", pack: LIBRARY[0] });
   const [mine, setMine] = useState<any[]>(() => LAST?.mine ?? []); // packs Claude wrote this session
@@ -1230,6 +1250,8 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
   const [vote, setVote] = useState(() => LAST?.vote ?? 0);
   const [rules, setRules] = useState(() => LAST?.rules ?? { hint: true, last: true, timer: true });
   const [mode, setMode] = useState(() => LAST?.mode ?? "local");
+  const [players, setPlayers] = useState<any[]>(() => LAST?.players ?? [["Aarav", 3], ["Meera", 12], ["Kabir", 21], ["Zoya", 8], ["Rohan", 34]].map(([name, sprite], id) => ({ id, name, sprite })));
+  const [newName, setNewName] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [open, setOpen] = useState(1);
   const [seen, setSeen] = useState<number[]>([1]);
@@ -1363,8 +1385,8 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
             </div>
           </Step>
 
-          <Step n={3} title="How you’re playing" sub="One shared phone, or everyone on their own" delay={0.05} open={open === 3} done={done[2]} onToggle={() => goTo(3)}
-            summary={`${m.t} · ${m.s}`}>
+          <Step n={3} title="Players" sub="Who’s playing tonight, and on how many phones" delay={0.05} open={open === 3} done={done[2]} onToggle={() => goTo(3)}
+            summary={`${m.t} · ${mode === "local" ? `${players.length} players` : m.s}`}>
             <div className="modes" role="radiogroup" aria-label="How you’re playing">
               {MODES.map((x) => (
                 <motion.button key={x.id} type="button" role="radio" aria-checked={mode === x.id} className="mode" onClick={() => setMode(x.id)} whileTap={{ scale: 0.97 }}>
@@ -1374,6 +1396,34 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
                 </motion.button>
               ))}
             </div>
+            <AnimatePresence mode="wait" initial={false}>
+              {mode === "local" ? (
+                <motion.div key="names" className="roster" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                  <div className="roster-head"><span className="label">Names · {players.length} of 12</span>{players.length < 3 && <span className="need">Add at least 3</span>}</div>
+                  <div className="roster-list">
+                    <AnimatePresence initial={false}>
+                      {players.map((p: any, i: number) => (
+                        <motion.div key={p.id} layout className="pl" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+                          <button type="button" className="pl-face" onClick={() => setPlayers(players.map((q: any, k: number) => k === i ? { ...q, sprite: nextSprite(players, q.sprite) } : q))} aria-label={`Change ${p.name}’s face`}><SpriteFace sprite={p.sprite} size={34} /></button>
+                          <input value={p.name} maxLength={14} aria-label={`Player ${i + 1} name`} onChange={(e) => setPlayers(players.map((q: any, k: number) => k === i ? { ...q, name: e.target.value } : q))} />
+                          <button type="button" className="pl-x" onClick={() => setPlayers(players.filter((_: any, k: number) => k !== i))} aria-label={`Remove ${p.name || "player"}`}><Ln d="M7 7l10 10M17 7 7 17" /></button>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                  <form className="pl-add" onSubmit={(e) => { e.preventDefault(); const n = newName.trim(); if (!n || players.length >= 12) return; setPlayers([...players, { id: Date.now(), name: n, sprite: nextSprite(players) }]); setNewName(""); }}>
+                    <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={players.length >= 12 ? "That’s a full table" : "Add a name"} maxLength={14} disabled={players.length >= 12} aria-label="New player name" />
+                    <button type="submit" className="btn dark" disabled={!newName.trim() || players.length >= 12}>Add</button>
+                  </form>
+                  <p className="tip">Tap a face to change it. The phone gets passed round in this order.</p>
+                </motion.div>
+              ) : (
+                <motion.div key="lobby" className="roster lobby-note" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                  <strong>{mode === "host" ? "Names come in as people join" : "You’ll type your name when you join"}</strong>
+                  <span>{mode === "host" ? "Each player types their own name on their phone. You can rename or remove anyone from the lobby before you start." : "The host sees your name in their lobby and starts the game."}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Step>
           <p className="foot">Illustrations: Open Peeps (MIT). Crowd motion: Skiper 39 by Skiper UI.</p>
         </div>
@@ -1385,9 +1435,10 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
             <span>{current ? `${live} words` : "One moment"} · {vote === 0 ? "votes on phones" : "votes out loud"} · {ruleCount} rule{ruleCount === 1 ? "" : "s"} on</span>
           </div>
           <motion.button className="go" type="button" disabled={!current} whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} onClick={() => {
+              if (mode === "local" && players.length < 3) { setToast("Add at least 3 players to start."); goTo(3); return; }
               if (mode !== "local") { setToast(`${m.cta}: rooms need phones that can find each other, so this one opens in the phone app.`); return; }
-              LAST = { pack, vote, rules, mode, mine, skipped };
-              onStart({ pack: { name: current.name, icon: current.icon ?? "cards", words: current.words.filter((w: string) => !skip.includes(w)) }, rules: { ...rules, outLoud: vote === 1 } });
+              LAST = { pack, vote, rules, mode, mine, skipped, players };
+              onStart({ players: players.map((p: any, i: number) => ({ name: p.name.trim() || `Player ${i + 1}`, sprite: p.sprite })), pack: { name: current.name, icon: current.icon ?? "cards", words: current.words.filter((w: string) => !skip.includes(w)) }, rules: { ...rules, outLoud: vote === 1 } });
             }}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={m.cta} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.18 }}>{m.cta}</motion.span>
@@ -1408,7 +1459,7 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
 /* =====================================================================================
    A full pass-and-play round: deal → clues → vote → reveal → last guess → results.
    ===================================================================================== */
-const PLAYERS = [
+let PLAYERS: { name: string; sprite: number }[] = [
   { name: "Aarav", sprite: 3 }, { name: "Meera", sprite: 12 }, { name: "Kabir", sprite: 21 },
   { name: "Zoya", sprite: 8 }, { name: "Rohan", sprite: 34 },
 ];
@@ -1429,8 +1480,9 @@ function newRound(prevScores?: number[]) {
 }
 
 /** A player's face, cropped from the same crowd sheet the visitors use. */
-function Avatar({ i, size = 44, ring }: { i: number; size?: number; ring?: string }) {
-  const sp = PLAYERS[i].sprite; const col = sp % 15; const row = Math.floor(sp / 15);
+function Avatar({ i, size = 44, ring }: { i: number; size?: number; ring?: string }) { return <SpriteFace sprite={PLAYERS[i].sprite} size={size} ring={ring} />; }
+function SpriteFace({ sprite, size = 44, ring }: { sprite: number; size?: number; ring?: string }) {
+  const sp = sprite; const col = sp % 15; const row = Math.floor(sp / 15);
   const cw = size * 1.55; const ch = cw * (176 / 168);
   return (
     <span className="avatar" style={{ width: size, height: size, boxShadow: ring ? `0 0 0 3px ${ring}` : undefined,
@@ -1664,7 +1716,7 @@ function Game({ onMenu }: { onMenu: () => void }) {
         <div className="panel-body gutter">
           <header className="ghead">
             <div className="stack">{PLAYERS.map((_, i) => <Avatar key={i} i={i} size={30} />)}</div>
-            <div><strong>Round {roundNo}</strong><span>{PACK.name} · 5 players · 1 imposter</span></div>
+            <div><strong>Round {roundNo}</strong><span>{PACK.name} · {PLAYERS.length} players · 1 imposter</span></div>
           </header>
           <nav className="phases" aria-label="Round steps (tap to preview any screen)">
             {PHASES.map(([k, label], i) => (
@@ -1828,7 +1880,7 @@ function Game({ onMenu }: { onMenu: () => void }) {
         {/* phase-aware bar at the bottom: what's happening and the main action */}
         {phase === "clues" && (
           <div className="cta gutter">
-            <div className="cta-sum"><strong>{left > 0 ? `${PLAYERS[round.order[speaker % PLAYERS.length]].name} is giving a clue` : "Time’s up"}</strong><span>{PACK.name} · 1 imposter among 5</span></div>
+            <div className="cta-sum"><strong>{left > 0 ? `${PLAYERS[round.order[speaker % PLAYERS.length]].name} is giving a clue` : "Time’s up"}</strong><span>{PACK.name} · 1 imposter among {PLAYERS.length}</span></div>
             <motion.button className="go" type="button" whileTap={{ scale: 0.96 }} onClick={() => go("vote")}>Start the vote<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>
           </div>
         )}
@@ -1843,7 +1895,7 @@ function Game({ onMenu }: { onMenu: () => void }) {
 function Root() {
   const [screen, setScreen] = useState<"home" | "game">("home");
   const [run, setRun] = useState(0);
-  const start = (cfg: any) => { PACK = cfg.pack; RULES = cfg.rules; setRun((r) => r + 1); setScreen("game"); window.scrollTo(0, 0); };
+  const start = (cfg: any) => { PLAYERS = cfg.players; PACK = cfg.pack; RULES = cfg.rules; setRun((r) => r + 1); setScreen("game"); window.scrollTo(0, 0); };
   return (
     <AnimatePresence mode="wait">
       {screen === "home"
