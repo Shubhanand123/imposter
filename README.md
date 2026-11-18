@@ -13,3 +13,11 @@ Install it: open the site on your phone and choose "Add to Home Screen" (iPhone:
 AI-written word packs (type any theme) only work when the page runs inside claude.ai; elsewhere the built-in packs are used.
 
 Illustrations: [Open Peeps](https://www.openpeeps.com/) by Pablo Stanley (MIT). Crowd motion based on Skiper 39 by Skiper UI.
+
+## Playing on several phones
+
+Choose **Host a room** on one phone. Everyone else opens the link, scans the QR, or picks **Join a room** and types the 4-letter code. Phones connect directly, so it works on the same Wi-Fi, on the host's mobile hotspot, or from anywhere online. Each phone shows only its own card and vote.
+
+## AI word packs on the public site
+
+Typing a theme asks Claude Haiku for a pack through `api/pack.js`. Add an `ANTHROPIC_API_KEY` environment variable to the Vercel project (Settings → Environment Variables), then redeploy. Without it, the site says AI packs aren't switched on and the built-in packs still work.

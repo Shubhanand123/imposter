@@ -626,6 +626,62 @@ body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 15px; 
 .switch[aria-checked="true"]:not(:hover) .fill:not(.surge)::before, .switch[aria-checked="true"]:not(:hover) .fill:not(.surge)::after { opacity: 0; transition: opacity .4s }
 .switch[aria-checked="false"]:not(:hover) .fill:not(.drain) { visibility: hidden; transition: transform .5s, visibility 0s .5s }
 .switch .off { color: #8A867E }
+
+/* ---------- moving border round the main button ---------- */
+.mb { position: relative; display: inline-flex; flex: none; padding: 2px; border-radius: 16px; overflow: hidden; isolation: isolate }
+.mb.wide, .dock .mb { }
+.mb-track { position: absolute; inset: 0; border-radius: 16px; z-index: 0 }
+.mb-svg { position: absolute; inset: 0; width: 100%; height: 100% }
+.mb-glow { display: block; width: 76px; height: 76px; opacity: .95; background: radial-gradient(#4FD1E6 38%, transparent 62%) }
+.mb > .go { position: relative; z-index: 1; border-radius: 14px }
+.mb:has(.go:disabled) .mb-track { opacity: 0 }
+
+/* ---------- lever switch (rules) ---------- */
+.lever { position: relative; flex: none; width: 66px; height: 50px; border: 0; padding: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent }
+.lever-base { position: absolute; left: 6px; right: 6px; bottom: 4px; height: 16px; border-radius: 999px; background: linear-gradient(#FDFDFD, #DCDCDC); box-shadow: 0 3px 8px -2px rgba(0,0,0,.25), inset 0 1px 0 #fff }
+.lever-slot { position: absolute; left: 4px; right: 4px; top: 4px; bottom: 4px; border-radius: 999px; background: linear-gradient(#5F6368, #9AA0A6); box-shadow: inset 0 2px 3px rgba(0,0,0,.45); transition: background .35s }
+.lever[aria-checked="true"] .lever-slot { background: linear-gradient(#0F6F60, #23B39D) }
+.lever-arm { position: absolute; left: 50%; bottom: 12px; width: 6px; height: 26px; margin-left: -3px; transform-origin: 50% 100%; transform: rotate(-42deg); transition: transform .5s cubic-bezier(.34,1.56,.64,1) }
+.lever[aria-checked="true"] .lever-arm { transform: rotate(42deg) }
+.lever:active .lever-arm { transition-duration: .25s }
+.lever-rod { position: absolute; inset: 0; border-radius: 3px; background: linear-gradient(90deg, #7D7D7D, #F7F7F7 45%, #8E8E8E) }
+.lever-knob { position: absolute; left: 50%; top: -15px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #FFD0D0 0 9%, #E5484D 34%, #9E161B 88%); box-shadow: 0 4px 6px -1px rgba(0,0,0,.35); transition: transform .2s }
+.lever:hover .lever-knob { transform: scale(1.08) }
+.lever:focus-visible { outline: 3px solid #7FB8C6; outline-offset: 2px; border-radius: 10px }
+@media (prefers-reduced-motion: reduce) { .lever-arm { transition: none } }
+
+/* ---------- online rooms ---------- */
+.net-join { gap: 12px }
+.center-stage .net-join .go { display: flex !important }
+.field { display: grid; gap: 6px }
+.field span { font-size: 12.5px; font-weight: 600; color: var(--muted) }
+.field input { border: 1.5px solid var(--line); border-radius: 12px; padding: 13px 14px; font: 600 16px var(--body); background: rgba(255,255,255,.75); color: var(--ink) }
+.field input:focus { outline: none; border-color: var(--water) }
+.code-in { letter-spacing: .4em; text-transform: uppercase; font-family: var(--display) !important; font-size: 22px !important }
+.net-err { margin: 0; padding: 10px 12px; border-radius: 12px; background: #FFF1F1; color: #B4232A; font-size: 13.5px }
+.lobby-code { display: flex; gap: 16px; align-items: center; padding: 14px; border-radius: 18px; background: rgba(255,255,255,.7) }
+.qr { flex: none; border-radius: 12px; overflow: hidden; background: #fff }
+.qr svg { display: block; width: 100%; height: 100% }
+.lc-right { display: grid; gap: 6px; min-width: 0 }
+.big-code { font: 800 40px var(--display); letter-spacing: .14em; color: var(--ink) }
+.share-btn { display: inline-flex; align-items: center; gap: 8px; justify-self: start }
+.share-btn svg { width: 16px; height: 16px }
+.lobby-wait { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.6); font-weight: 600 }
+.lobby-wait.big { flex-direction: column; padding: 28px; text-align: center }
+.net-pl strong { flex: 1; display: flex; gap: 8px; align-items: center; font-size: 15px }
+.net-pl em, .order em.you, .brow em.you { font-style: normal; font-size: 11px; font-weight: 700; color: var(--water); border: 1.5px solid var(--water); padding: 1px 6px; border-radius: 999px }
+.stack .off { opacity: .35 }
+.ready-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap }
+.rd { border-radius: 50%; opacity: .35; transition: opacity .3s, transform .3s }
+.rd.on { opacity: 1; transform: scale(1.06) }
+.voted-list { display: grid; gap: 6px }
+.vl { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,.4) }
+.vl span { flex: 1; font-weight: 600 } .vl i { font-style: normal; font-size: 12px; color: var(--muted) }
+.vl.on i { color: var(--ok); font-weight: 700 }
+.dotl { display: inline-flex; gap: 4px; margin-right: 6px } .dotl i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: dotl 1s ease-in-out infinite } .dotl i:nth-child(2) { animation-delay: .15s } .dotl i:nth-child(3) { animation-delay: .3s }
+@keyframes dotl { 0%, 100% { opacity: .25; transform: translateY(0) } 50% { opacity: 1; transform: translateY(-3px) } }
+@media (max-width: 420px) { .lobby-code { flex-direction: column; text-align: center } .lc-right { justify-items: center } .share-btn { justify-self: center } }
 @media (prefers-reduced-motion: reduce) { .twave, .tbub, .cardwater svg { animation: none !important } .switch, .switch *, .seg .pill, .word.skel { transition: none !important; animation: none !important } }
 </style>
 </head>
@@ -639,10 +695,13 @@ body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 15px; 
 <script src="https://cdn.jsdelivr.net/npm/framer-motion@11.11.17/dist/framer-motion.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.4/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 
 <script type="text/plain" id="app-src">
 "use client";
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type PointerEvent as RPointerEvent } from "react";
+import { useAnimationFrame, useMotionTemplate } from "framer-motion";
 import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type AnimationPlaybackControls, type MotionValue } from "framer-motion";
 import { useMemo } from "react";
 import { gsap } from "gsap";
@@ -1186,10 +1245,10 @@ function Setting({ title, sub, on, onChange, icon, children }: { title: string; 
   // tapping anywhere on the row flips the switch, with the same water surge as tapping the switch itself
   return (
     <div className={`setting ${on ? "is-on" : ""}`}>
-      <div className="setting-row" onClick={(e) => { if (!(e.target as HTMLElement).closest(".switch")) (e.currentTarget.querySelector(".switch") as HTMLButtonElement)?.click(); }}>
+      <div className="setting-row" onClick={(e) => { if (!(e.target as HTMLElement).closest(".switch-like")) (e.currentTarget.querySelector(".switch-like") as HTMLButtonElement)?.click(); }}>
         {icon && <span className="set-ico"><Ln d={icon} /></span>}
         <div className="set-txt"><strong>{title}</strong><span>{sub}</span></div>
-        <Switch on={on} onChange={onChange} label={title} />
+        <Lever on={on} onChange={onChange} label={title} />
       </div>
       <AnimatePresence initial={false}>
         {on && children && <motion.div className="set-extra" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease }}>{children}</motion.div>}
@@ -1290,7 +1349,7 @@ function Step({ n, title, sub, summary, open, done, onToggle, onNext, nextLabel,
 }
 
 const nextSprite = (taken: any[], after = -1) => { const used = new Set(taken.map((p) => p.sprite)); for (let k = 1; k <= 60; k++) { const c = (after + k * 7 + 60) % 60; if (!used.has(c)) return c; } return (after + 1) % 60; };
-function Home({ onStart }: { onStart: (cfg: any) => void }) {
+function Home({ onStart, onRoom }: { onStart: (cfg: any) => void; onRoom: (role: "host" | "guest", cfg?: any) => void }) {
   const [pack, setPack] = useState<any>(() => LAST?.pack ?? { kind: "library", pack: LIBRARY[0] });
   const [mine, setMine] = useState<any[]>(() => LAST?.mine ?? []); // packs Claude wrote this session
   const [skipped, setSkipped] = useState<Record<string, string[]>>(() => LAST?.skipped ?? {});
@@ -1330,10 +1389,13 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
     const sample = sampleRef.current;
     document.querySelector(".panel")?.scrollTo({ top: 0, behavior: "smooth" });
     setOpen(1);
-    if (!sample) { setPack({ kind: "error", topic, msg: "Claude isn’t available in this view. Open the page signed in to claude.ai to make packs." }); return; }
     setPack({ kind: "loading", topic });
     try {
-      const res = await sample.json(
+      const res = !sample ? await fetch("/api/pack", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ topic }) }).then(async (r) => {
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw { code: r.status === 503 ? "not_configured" : r.status === 429 ? "rate_limited" : "failed" };
+        return j;
+      }) : await sample.json(
         `You write word packs for "Imposter", a party game: everyone but the imposter sees one secret word from the pack, so words must be well-known, concrete, distinct from each other, guessable from one-word clues, and family-friendly. Theme: "${topic}". Reply with JSON only: {"name": "short pack title (2-4 words)", "words": [exactly 20 strings, each 1-3 words]}.`,
         { model: "claude-haiku-5-5", modelTier: "quick", cache: false });
       const words = Array.isArray(res?.words) ? [...new Set(res.words.map((w: any) => String(w).trim()).filter(Boolean))].slice(0, 24) : [];
@@ -1345,6 +1407,7 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
     } catch (err: any) {
       const msg = err?.code === "rate_limited" ? "Too many packs at once. Wait a moment, then try again."
         : err?.code === "not_granted" ? "Claude access is off for this page. Allow it in the page’s permissions to make packs."
+        : err?.code === "not_configured" ? "AI packs aren’t switched on for this site yet. Pick a pack below, shuffle, or mix them all."
         : "That pack didn’t come through. Try again, or word the theme differently.";
       setPack({ kind: "error", topic, msg });
     }
@@ -1491,9 +1554,9 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
             <strong className="with-pi">{current ? <><PackIcon k={current.icon} />{current.name}</> : "Writing your pack…"}</strong>
             <span>{current ? `${live} words` : "One moment"} · {vote === 0 ? "votes on phones" : "votes out loud"} · {ruleCount} rule{ruleCount === 1 ? "" : "s"} on</span>
           </div>
-          <motion.button className="go" type="button" disabled={!current} whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} onClick={() => {
+          <MBWrap><motion.button className="go" type="button" disabled={!current} whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }} onClick={() => {
               if (mode === "local" && players.length < 3) { setToast("Add at least 3 players to start."); goTo(3); return; }
-              if (mode !== "local") { setToast(`${m.cta}: rooms need phones that can find each other, so this one opens in the phone app.`); return; }
+              if (mode !== "local") { LAST = { pack, vote, rules, mode, mine, skipped, players }; onRoom(mode === "host" ? "host" : "guest", { pack: { name: current.name, icon: current.icon ?? "cards", words: current.words.filter((w: string) => !skip.includes(w)) }, rules: { ...rules, outLoud: vote === 1 } }); return; }
               LAST = { pack, vote, rules, mode, mine, skipped, players };
               onStart({ players: players.map((p: any, i: number) => ({ name: p.name.trim() || `Player ${i + 1}`, sprite: p.sprite })), pack: { name: current.name, icon: current.icon ?? "cards", words: current.words.filter((w: string) => !skip.includes(w)) }, rules: { ...rules, outLoud: vote === 1 } });
             }}>
@@ -1501,7 +1564,7 @@ function Home({ onStart }: { onStart: (cfg: any) => void }) {
               <motion.span key={m.cta} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.18 }}>{m.cta}</motion.span>
             </AnimatePresence>
             <Ln d="M5 12h14M13 6l6 6-6 6" />
-          </motion.button>
+          </motion.button></MBWrap>
         </div>
       </motion.aside>
 
@@ -1746,8 +1809,8 @@ function Game({ onMenu }: { onMenu: () => void }) {
         </AnimatePresence>
         {dock.alts?.map((a) => <motion.button key={a.label} type="button" className="dock-alt with-ico" whileTap={{ scale: 0.95 }} onClick={a.on} aria-label={a.label}>{a.icon && <Ln d={a.icon} />}<span>{a.label}</span></motion.button>)}
         {dock.alt && <motion.button type="button" className={`dock-alt ${dock.alt.on2 ? "on" : ""}`} whileTap={{ scale: 0.95 }} onClick={dock.alt.on}>{dock.alt.label}</motion.button>}
-        {dock.btn && <motion.button type="button" className={`go dock-go ${dock.btn.tone ?? ""}`} disabled={dock.btn.disabled} whileTap={{ scale: 0.96 }} onClick={dock.btn.on} layout>
-          {dock.btn.label}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button>}
+        {dock.btn && <MBWrap><motion.button type="button" className={`go dock-go ${dock.btn.tone ?? ""}`} disabled={dock.btn.disabled} whileTap={{ scale: 0.96 }} onClick={dock.btn.on}>
+          {dock.btn.label}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button></MBWrap>}
       </motion.div>
   );
   const phaseIndex = PHASES.findIndex(([k]) => k === phase || (phase === "guess" && k === "reveal"));
@@ -1949,14 +2012,371 @@ function Game({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+/* =====================================================================================
+   Online rooms. One phone hosts, the others join with the room code, the QR, or the link.
+   Phones talk directly (WebRTC through PeerJS), so it works on the same Wi-Fi, on the host's
+   hotspot, or from anywhere. The host phone runs the game and sends each phone only its own view.
+   ===================================================================================== */
+const ROOM_PREFIX = "imposter-party-room-";
+const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ";
+const makeCode = () => Array.from({ length: 4 }, () => CODE_CHARS[rnd(CODE_CHARS.length)]).join("");
+const joinLink = (code: string) => `${location.origin}${location.pathname}?room=${code}`;
+const loadName = () => { try { return localStorage.getItem("imposter-name") || ""; } catch { return ""; } };
+const saveName = (n: string) => { try { localStorage.setItem("imposter-name", n); } catch {} };
+
+function QR({ text, size = 176 }: { text: string; size?: number }) {
+  const svg = useMemo(() => {
+    try { const q = (window as any).qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch { return ""; }
+  }, [text]);
+  return <div className="qr" style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: svg }} aria-label="QR code to join this room" role="img" />;
+}
+
+/** The host's game: the single source of truth. Guests only ever see what viewFor() gives them. */
+function createHost(cfg: any, code: string, push: (v: any) => void) {
+  const S: any = { code, phase: "lobby", players: [] as any[], rules: { secs: 120, ...cfg.rules }, pack: cfg.pack, round: 0, word: "", imposter: -1, order: [] as number[], speaker: 0,
+    endsAt: 0, paused: false, leftMs: 0, votes: {} as Record<number, number>, accused: null as number | null, revealed: false, guess: null as string | null, outcome: null as string | null, points: null as number[] | null, options: [] as string[] };
+  let tick: any = null;
+  const used = () => S.players.map((p: any) => p.sprite);
+  const addPlayer = (id: string, name: string, conn: any) => {
+    const p = { id, name: name.slice(0, 14) || `Player ${S.players.length + 1}`, sprite: nextSprite(S.players), conn, online: true, ready: false, score: 0 };
+    S.players.push(p); return p;
+  };
+  const tally = () => S.players.map((_: any, k: number) => Object.values(S.votes).filter((v) => v === k).length);
+  const leftNow = () => S.paused ? S.leftMs : S.endsAt ? Math.max(0, S.endsAt - Date.now()) : 0;
+  const viewFor = (p: any) => {
+    const i = S.players.indexOf(p); const isImp = i === S.imposter; const playing = S.phase !== "lobby";
+    const late = S.phase === "results" || (S.phase !== "reveal" && S.phase !== "vote" && S.phase !== "clues" && S.phase !== "deal" && S.phase !== "lobby");
+    return {
+      code: S.code, phase: S.phase, me: i, isHost: p.id === "host", round: S.round, packName: S.pack.name,
+      rules: { hint: S.rules.hint, last: S.rules.last, timer: S.rules.timer, outLoud: S.rules.outLoud, secs: S.rules.secs },
+      players: S.players.map((q: any, k: number) => ({ name: q.name, sprite: q.sprite, online: q.online, ready: q.ready, voted: S.votes[k] !== undefined, score: q.score })),
+      role: playing ? (isImp ? "imposter" : "crew") : null,
+      word: (playing && !isImp) || S.phase === "results" ? S.word : null,
+      hint: isImp ? (S.rules.hint ? S.pack.name : null) : S.pack.name,
+      order: S.order, speaker: S.speaker, timerLeft: leftNow(), paused: S.paused,
+      myVote: S.votes[i], tally: ["reveal", "guess", "results"].includes(S.phase) ? tally() : null,
+      accused: S.accused, revealed: S.revealed,
+      imposter: S.phase === "results" || (S.revealed && S.accused === S.imposter) || late ? S.imposter : null,
+      options: S.phase === "guess" && isImp ? S.options : null, guess: S.guess, outcome: S.outcome, points: S.points,
+      guesser: S.phase === "guess" ? S.imposter : null,
+    };
+  };
+  const broadcast = () => S.players.forEach((p: any) => { if (p.id === "host") push(viewFor(p)); else if (p.conn?.open) { try { p.conn.send({ t: "view", v: viewFor(p) }); } catch {} } });
+  const online = () => S.players.filter((p: any) => p.online);
+  const newRound = () => {
+    S.round += 1; const ws = S.pack.words; S.word = ws[rnd(ws.length)]; S.imposter = rnd(S.players.length);
+    let order = shuffled(S.players.map((_: any, k: number) => k)); if (order[0] === S.imposter) order = [...order.slice(1), order[0]];
+    S.order = order; S.players.forEach((p: any) => { p.ready = false; }); S.votes = {}; S.accused = null; S.revealed = false; S.guess = null; S.outcome = null; S.points = null;
+    S.speaker = 0; S.endsAt = 0; S.paused = false; S.phase = "deal";
+  };
+  const toClues = () => { S.phase = "clues"; S.speaker = 0; S.paused = false; S.endsAt = S.rules.timer ? Date.now() + S.rules.secs * 1000 : 0; armTick(); };
+  const armTick = () => { clearTimeout(tick); if (S.phase === "clues" && S.endsAt && !S.paused) tick = setTimeout(() => broadcast(), Math.max(0, S.endsAt - Date.now()) + 50); };
+  const toReveal = () => {
+    const t = tally(); const top = Math.max(0, ...t); const leaders = t.map((n: number, k: number) => (n === top && top > 0 ? k : -1)).filter((k: number) => k >= 0);
+    S.accused = leaders.length === 1 ? leaders[0] : null; S.revealed = false; S.phase = "reveal"; S.endsAt = 0; clearTimeout(tick);
+  };
+  const finish = (g: string | null) => {
+    S.guess = g; const caught = S.accused === S.imposter;
+    S.outcome = !caught ? "escaped" : g === S.word ? "stolen" : "caught";
+    S.points = S.players.map((_: any, k: number) => k === S.imposter ? (S.outcome === "escaped" ? 3 : S.outcome === "stolen" ? 2 : 0) : (S.outcome === "caught" ? (S.votes[k] === S.imposter ? 2 : 1) : 0));
+    S.players.forEach((p: any, k: number) => { p.score += S.points[k]; }); S.phase = "results";
+  };
+  const allVoted = () => S.players.every((p: any, k: number) => !p.online || S.votes[k] !== undefined);
+  const act = (pid: string, m: any) => {
+    const p = S.players.find((q: any) => q.id === pid); if (!p) return; const i = S.players.indexOf(p); const host = pid === "host";
+    switch (m.t) {
+      case "ready": if (S.phase === "deal") { p.ready = true; if (S.players.every((q: any) => q.ready || !q.online)) toClues(); } break;
+      case "vote": if (S.phase === "vote" && !S.rules.outLoud && m.target !== i && (m.target === -1 || S.players[m.target])) { S.votes[i] = m.target; if (allVoted()) toReveal(); } break;
+      case "guess": if (S.phase === "guess" && i === S.imposter) finish(String(m.word)); break;
+      default:
+        if (!host) return;
+        if (m.t === "start" && (S.phase === "lobby" || S.phase === "results") && online().length >= 3) newRound();
+        else if (m.t === "newgame") { S.players.forEach((q: any) => { q.score = 0; }); S.round = 0; newRound(); }
+        else if (m.t === "forceClues" && S.phase === "deal") toClues();
+        else if (m.t === "next" && S.phase === "clues") S.speaker += 1;
+        else if (m.t === "pause" && S.phase === "clues" && S.endsAt) { if (S.paused) { S.endsAt = Date.now() + S.leftMs; S.paused = false; } else { S.leftMs = leftNow(); S.paused = true; } armTick(); }
+        else if (m.t === "add30" && S.phase === "clues" && S.rules.timer) { if (S.paused) S.leftMs += 30000; else S.endsAt = Math.max(Date.now(), S.endsAt) + 30000; armTick(); }
+        else if (m.t === "startVote" && S.phase === "clues") { S.phase = "vote"; S.votes = {}; S.endsAt = 0; clearTimeout(tick); }
+        else if (m.t === "tableVote" && S.phase === "vote" && S.rules.outLoud && S.players[m.target]) { S.players.forEach((_: any, k: number) => { S.votes[k] = m.target; }); toReveal(); }
+        else if (m.t === "closeVote" && S.phase === "vote") toReveal();
+        else if (m.t === "reveal" && S.phase === "reveal" && S.accused !== null) S.revealed = true;
+        else if (m.t === "afterReveal" && S.phase === "reveal") {
+          if (S.accused !== null && S.accused === S.imposter && S.rules.last) { S.phase = "guess"; S.options = shuffled([S.word, ...shuffled(S.pack.words.filter((w: string) => w !== S.word)).slice(0, 7)]); }
+          else finish(null);
+        }
+        else if (m.t === "kick" && S.phase === "lobby" && m.index > 0) { const k = S.players[m.index]; try { k?.conn?.send({ t: "kicked" }); k?.conn?.close(); } catch {} S.players.splice(m.index, 1); }
+    }
+    broadcast();
+  };
+  const hello = (conn: any, name: string) => {
+    const clean = String(name || "").trim().slice(0, 14);
+    const back = S.players.find((q: any) => !q.online && q.id !== "host" && q.name.toLowerCase() === clean.toLowerCase());
+    if (back) { back.conn = conn; back.online = true; back.id = conn.peer; broadcast(); return; }
+    if (S.phase !== "lobby") { conn.send({ t: "refused", why: "The game has already started. Ask the host to let you in next round." }); return; }
+    if (S.players.length >= 12) { conn.send({ t: "refused", why: "This room is full (12 players)." }); return; }
+    addPlayer(conn.peer, clean, conn); broadcast();
+  };
+  const drop = (conn: any) => { const p = S.players.find((q: any) => q.conn === conn); if (!p) return; if (S.phase === "lobby") S.players.splice(S.players.indexOf(p), 1); else p.online = false; if (S.phase === "vote" && allVoted()) toReveal(); broadcast(); };
+  return { S, addPlayer, act, hello, drop, broadcast, stop: () => clearTimeout(tick) };
+}
+
+function NetRoom({ role, cfg, startCode, onMenu }: { role: "host" | "guest"; cfg?: any; startCode?: string; onMenu: () => void }) {
+  const [name, setName] = useState(loadName);
+  const [code, setCode] = useState(startCode ?? "");
+  const [stage, setStage] = useState<"name" | "connecting" | "in" | "error">("name");
+  const [err, setErr] = useState("");
+  const [v, setV] = useState<any>(null);
+  const [got, setGot] = useState(0);
+  const [, setNow] = useState(0);
+  const [crowdScale] = useState(() => (window.innerWidth >= 900 ? 1.25 : 2));
+  const peer = useRef<any>(null); const conn = useRef<any>(null); const host = useRef<any>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 2400); return () => clearTimeout(t); }, [toast]);
+  useEffect(() => () => { host.current?.stop(); try { peer.current?.destroy(); } catch {} }, []);
+  useEffect(() => { if (v?.phase !== "clues" || !v?.rules.timer) return; const t = setInterval(() => setNow((n) => n + 1), 250); return () => clearInterval(t); }, [v?.phase, v?.rules?.timer]);
+  const Peer = (window as any).Peer;
+
+  const send = (m: any) => { if (role === "host") host.current?.act("host", m); else if (conn.current?.open) conn.current.send(m); };
+  const receive = (nv: any) => { setV(nv); setGot(Date.now()); };
+
+  const openRoom = (tries = 0) => {
+    const c = makeCode(); setStage("connecting"); setErr("");
+    if (!Peer) { setStage("error"); setErr("Couldn’t load the room service. Check the internet connection and try again."); return; }
+    const p = new Peer(ROOM_PREFIX + c); peer.current = p;
+    p.on("open", () => {
+      setCode(c); const h = createHost(cfg, c, receive); host.current = h; h.addPlayer("host", name.trim(), null); setStage("in"); h.broadcast();
+      p.on("connection", (cn: any) => {
+        cn.on("data", (m: any) => { if (m?.t === "hello") h.hello(cn, m.name); else { const pl = h.S.players.find((q: any) => q.conn === cn); if (pl) h.act(pl.id, m); } });
+        cn.on("close", () => h.drop(cn)); cn.on("error", () => h.drop(cn));
+      });
+    });
+    p.on("error", (e: any) => {
+      if (e?.type === "unavailable-id" && tries < 4) { try { p.destroy(); } catch {} openRoom(tries + 1); return; }
+      if (stageRef.current === "in") { setToast("Connection hiccup. Players may need to rejoin."); return; }
+      setStage("error"); setErr("Couldn’t open a room. Check the internet connection (a phone hotspot works too) and try again.");
+    });
+  };
+  const joinRoom = () => {
+    const c = code.trim().toUpperCase(); if (c.length < 4) { setErr("Enter the 4-letter room code."); return; }
+    setStage("connecting"); setErr("");
+    if (!Peer) { setStage("error"); setErr("Couldn’t load the room service. Check the internet connection and try again."); return; }
+    const p = new Peer(); peer.current = p;
+    p.on("open", () => {
+      const cn = p.connect(ROOM_PREFIX + c, { reliable: true }); conn.current = cn;
+      cn.on("open", () => cn.send({ t: "hello", name: name.trim() }));
+      cn.on("data", (m: any) => {
+        if (m?.t === "view") { receive(m.v); setStage("in"); }
+        else if (m?.t === "refused") { setStage("error"); setErr(m.why); }
+        else if (m?.t === "kicked") { setStage("error"); setErr("The host removed you from the room."); }
+      });
+      cn.on("close", () => { if (stageRef.current === "in") { setStage("error"); setErr("Lost the host. Rejoin with the same name to carry on with your score."); } });
+    });
+    p.on("error", (e: any) => { setStage("error"); setErr(e?.type === "peer-unavailable" ? `No room called ${c}. Check the code with the host.` : "Couldn’t reach the room. Check the internet connection and try again."); });
+  };
+  const stageRef = useRef(stage); stageRef.current = stage;
+  const go = (e?: any) => { e?.preventDefault(); if (!name.trim()) { setErr("Type your name first."); return; } saveName(name.trim()); role === "host" ? openRoom() : joinRoom(); };
+  const leave = () => { host.current?.stop(); try { peer.current?.destroy(); } catch {} onMenu(); };
+  const share = async () => {
+    const url = joinLink(code);
+    try { if ((navigator as any).share) { await (navigator as any).share({ title: "Join my Imposter room", text: `Room ${code}`, url }); return; } } catch { return; }
+    try { await navigator.clipboard.writeText(url); setToast("Link copied. Send it on WhatsApp or anywhere."); } catch { setToast(url); }
+  };
+
+  // keep the shared card text in step with the room (SecretCard reads these)
+  if (v) { PACK = { ...PACK, name: v.packName }; RULES = { ...RULES, hint: !!v.hint }; }
+  const P = v?.players ?? []; const me = v?.me ?? -1; const isHost = role === "host";
+  const timerLeft = v ? Math.max(0, Math.round((v.timerLeft - (v.paused ? 0 : Date.now() - got)) / 1000)) : 0;
+  const nm = (k: number) => P[k]?.name ?? "";
+  const Face = ({ k, size = 40, ring }: { k: number; size?: number; ring?: string }) => P[k] ? <SpriteFace sprite={P[k].sprite} size={size} ring={ring} /> : null;
+
+  // what the action bar says and does on this phone
+  const dock = ((): any => {
+    if (!v || stage !== "in") return null;
+    const N = P.length; const online = P.filter((p: any) => p.online).length;
+    switch (v.phase) {
+      case "lobby": return isHost ? { sum: `${N} in the room`, sub: N < 3 ? "Need at least 3 players" : "Everyone in? Start when ready", btn: { label: "Start the game", disabled: online < 3, on: () => send({ t: "start" }) } }
+        : { sum: "You’re in", sub: "Waiting for the host to start" };
+      case "deal": { const r = P.filter((p: any) => p.ready).length; return { sum: P[me]?.ready ? `Waiting for others · ${r} of ${N}` : "Hold your card to see it", sub: "Keep your screen to yourself", btn: !P[me]?.ready ? { label: "I’ve seen it", on: () => send({ t: "ready" }) } : isHost ? { label: "Start clues now", on: () => send({ t: "forceClues" }) } : undefined }; }
+      case "clues": return { sum: `${nm(v.order[v.speaker % N])} is giving a clue`, sub: v.rules.timer ? (timerLeft > 0 ? `${Math.floor(timerLeft / 60)}:${String(timerLeft % 60).padStart(2, "0")} left` : "Time’s up") : "Talk it through",
+        alts: isHost ? [{ label: "Next", on: () => send({ t: "next" }) }] : undefined, btn: isHost ? { label: "Start the vote", on: () => send({ t: "startVote" }) } : undefined };
+      case "vote": { const n = P.filter((p: any) => p.voted).length;
+        if (v.rules.outLoud) return { sum: isHost ? "Tap who the table voted out" : "Decide out loud", sub: isHost ? "Then confirm" : "The host taps the name" };
+        return { sum: v.myVote != null ? `Vote locked · ${n} of ${online}` : "Tap who you think it is", sub: "Votes are secret", alts: v.myVote == null ? [{ label: "Skip", on: () => send({ t: "vote", target: -1 }) }] : undefined,
+          btn: isHost && v.myVote != null && n < online ? { label: "Close the vote", on: () => send({ t: "closeVote" }) } : undefined }; }
+      case "reveal": if (!isHost) return { sum: v.accused === null ? "It’s a tie" : v.revealed ? "Card revealed" : `${nm(v.accused)} got the most votes`, sub: "The host reveals the card" };
+        if (v.accused === null) return { sum: "It’s a tie", sub: "Nobody is voted out", btn: { label: "See who it was", on: () => send({ t: "afterReveal" }) } };
+        return !v.revealed ? { sum: `${nm(v.accused)} got the most votes`, sub: "Moment of truth", btn: { label: `Reveal ${nm(v.accused)}’s card`, tone: "red", on: () => send({ t: "reveal" }) } }
+          : { sum: "Card revealed", sub: "Carry on", btn: { label: v.imposter !== null && v.rules.last ? "Last-chance guess" : "See the results", on: () => send({ t: "afterReveal" }) } };
+      case "guess": return v.options ? { sum: "Tap the word you think it was", sub: "Get it right to steal the round" } : { sum: `${nm(v.guesser)} is guessing the word`, sub: "Fingers crossed" };
+      case "results": return isHost ? { sum: v.outcome === "caught" ? "Crew wins this round" : "Imposter wins this round", sub: `Round ${v.round} done`,
+        alts: [{ label: "Main menu", on: leave, icon: "M3 12l9-8 9 8M5 10v10h14V10" }, { label: "New game", on: () => send({ t: "newgame" }), icon: "M4 4v6h6M20 20v-6h-6M5.6 15a8 8 0 0 0 13.4 3M18.4 9A8 8 0 0 0 5 6" }], btn: { label: "Continue", on: () => send({ t: "start" }) } }
+        : { sum: v.outcome === "caught" ? "Crew wins this round" : "Imposter wins this round", sub: "Waiting for the host" };
+    }
+    return null;
+  })();
+
+  const cheer = v?.phase === "results";
+  return (
+    <div className="frame center-stage glass">
+      <section className="scene game-scene" aria-label="Aquarium">
+        <AquariumPrompt bare className="tank" fish={22} />
+        <div className="visitors" aria-hidden="true"><CrowdCanvas src="crowd@2x.png" rows={15} cols={4} pixelRatio={crowdScale} cheer={cheer} /></div>
+        <div className="brand gutter"><span className="mark">IMP<i>O</i>STER</span>
+          <button type="button" className="menu-btn" onClick={leave}><Ln d="M15 6l-6 6 6 6" /><span>{stage === "in" ? "Leave" : "Back"}</span></button></div>
+      </section>
+      <div className="veil" aria-hidden="true" />
+      <motion.aside className="gcard net" initial={{ opacity: 0, y: 28, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease }}>
+        <div className="panel-body gutter">
+          {stage !== "in" ? (
+            <form className="stage net-join" onSubmit={go}>
+              <span className="label">{role === "host" ? "Host a room" : "Join a room"}</span>
+              <h2 className="title">{role === "host" ? "Open a room for everyone’s phones" : startCode ? `Join room ${startCode}` : "Join your friends’ room"}</h2>
+              <p className="muted">{role === "host" ? "Friends join with a code, a QR scan or a link. Same Wi-Fi, your hotspot, or anywhere online all work." : "Ask the host for the 4-letter code, or scan their QR."}</p>
+              <label className="field"><span>Your name</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={14} placeholder="e.g. Aarav" autoFocus /></label>
+              {role === "guest" && <label className="field"><span>Room code</span><input className="code-in" value={code} onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))} placeholder="ABCD" inputMode="text" autoCapitalize="characters" /></label>}
+              {err && <p className="net-err" role="alert">{err}</p>}
+              <button type="submit" className="go wide" disabled={stage === "connecting"}>{stage === "connecting" ? <><DotLoaderMini />Connecting…</> : role === "host" ? "Open the room" : "Join"}<Ln d="M5 12h14M13 6l6 6-6 6" /></button>
+            </form>
+          ) : (
+            <>
+              <header className="ghead">
+                <div className="stack">{P.map((p: any, k: number) => <span key={k} className={p.online ? "" : "off"}><SpriteFace sprite={p.sprite} size={30} /></span>)}</div>
+                <div><strong>{v.phase === "lobby" ? `Room ${v.code}` : `Round ${v.round} · Room ${v.code}`}</strong><span>{v.packName} · {P.length} players{me >= 0 ? ` · you’re ${nm(me)}` : ""}</span></div>
+              </header>
+              <AnimatePresence mode="wait">
+                <motion.section key={`${v.phase}-${v.round}-${v.revealed}`} className={`stage st-${v.phase === "lobby" ? "lobby" : v.phase}`} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.35, ease }}>
+                  {v.phase === "lobby" && (<>
+                    {isHost && <div className="lobby-code">
+                      <QR text={joinLink(v.code)} />
+                      <div className="lc-right"><span className="label">Room code</span><strong className="big-code">{v.code}</strong>
+                        <span className="muted">Scan with the phone camera, type the code in Join a room, or send the link.</span>
+                        <button type="button" className="btn light share-btn" onClick={share}><Ln d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13" />Share link</button></div>
+                    </div>}
+                    {!isHost && <div className="lobby-wait"><DotLoaderMini /><span>Waiting for the host to start…</span></div>}
+                    <div className="roster-list">
+                      <AnimatePresence initial={false}>{P.map((p: any, k: number) => (
+                        <motion.div key={p.name + k} layout className="pl net-pl" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}>
+                          <SpriteFace sprite={p.sprite} size={34} /><strong>{p.name}{k === 0 && <em>host</em>}{k === me && k !== 0 && <em className="you">you</em>}</strong>
+                          {isHost && k > 0 && <button type="button" className="pl-x" onClick={() => send({ t: "kick", index: k })} aria-label={`Remove ${p.name}`}><Ln d="M7 7l10 10M17 7 7 17" /></button>}
+                        </motion.div>))}</AnimatePresence>
+                    </div>
+                  </>)}
+
+                  {v.phase === "deal" && (<>
+                    <h2 className="title">{nm(me)}, your card</h2>
+                    <SecretCard role={v.role} word={v.word ?? ""} onSeen={() => {}} />
+                    <div className="ready-row">{P.map((p: any, k: number) => <span key={k} className={`rd ${p.ready ? "on" : ""}`} title={p.name}><SpriteFace sprite={p.sprite} size={26} /></span>)}</div>
+                  </>)}
+
+                  {v.phase === "clues" && (<>
+                    <h2 className="title">Clue time</h2>
+                    <p className="muted">One word each, in this order.{v.role === "imposter" ? " You’re the imposter: blend in." : ` Your word: ${v.word}.`}</p>
+                    {v.rules.timer && <WaterTimer total={v.rules.secs} left={timerLeft} />}
+                    {isHost && v.rules.timer && <div className="tctl"><button type="button" className="btn light" onClick={() => send({ t: "pause" })}>{v.paused ? "Resume" : "Pause"}</button><button type="button" className="btn light" onClick={() => send({ t: "add30" })}>+30 sec</button></div>}
+                    <ol className="order">{v.order.map((pi: number, k: number) => { const now = k === v.speaker % P.length; return (
+                      <li key={pi} className={now ? "now" : ""}><span className="n">{k + 1}</span><Face k={pi} size={36} ring={now ? "#0B4757" : undefined} /><strong>{nm(pi)}{pi === me && <em className="you">you</em>}</strong>{now && <span className="speaking">Speaking</span>}</li>); })}</ol>
+                  </>)}
+
+                  {v.phase === "vote" && (<>
+                    <h2 className="title">{v.rules.outLoud ? "Who does the table vote out?" : v.myVote != null ? "Vote locked in" : "Who’s the imposter?"}</h2>
+                    {(v.rules.outLoud ? isHost : v.myVote == null) ? (
+                      <div className="vgrid">{P.map((p: any, k: number) => (!v.rules.outLoud && k === me) ? null : (
+                        <motion.button key={k} type="button" className="vtile" whileTap={{ scale: 0.95 }} onClick={() => send(v.rules.outLoud ? { t: "tableVote", target: k } : { t: "vote", target: k })}>
+                          <Face k={k} size={60} /><strong>{p.name}</strong></motion.button>))}</div>
+                    ) : (
+                      <div className="voted-list">{P.map((p: any, k: number) => <div key={k} className={`vl ${p.voted ? "on" : ""}`}><Face k={k} size={30} /><span>{p.name}</span><i>{p.voted ? "voted" : p.online ? "thinking…" : "away"}</i></div>)}</div>
+                    )}
+                  </>)}
+
+                  {v.phase === "reveal" && (<>
+                    <h2 className="title">The votes are in</h2>
+                    <div className="bars">{P.map((p: any, k: number) => (
+                      <div key={k} className={`bar ${k === v.accused ? "lead" : ""}`}><Face k={k} size={34} /><strong>{p.name}</strong>
+                        <div className="track"><motion.i initial={{ width: 0 }} animate={{ width: `${((v.tally?.[k] ?? 0) / Math.max(1, P.length)) * 100}%` }} transition={{ duration: 0.8, delay: 0.2 + k * 0.1, ease }} /></div><span className="cnt">{v.tally?.[k] ?? 0}</span></div>))}</div>
+                    {v.revealed && v.accused !== null && (
+                      <motion.div className={`verdict ${v.imposter === v.accused ? "caught" : "wrong"}`} initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 140, damping: 16 }}>
+                        <Face k={v.accused} size={72} ring={v.imposter === v.accused ? "#E5484D" : "#1F9D8B"} />
+                        <strong>{nm(v.accused)} {v.imposter === v.accused ? "was the imposter!" : "was innocent."}</strong>
+                        <span>{v.imposter === v.accused ? (v.rules.last ? "One last chance: if they name the word, they steal the round." : "Busted. The crew wins.") : "The real imposter is still hidden…"}</span>
+                      </motion.div>)}
+                  </>)}
+
+                  {v.phase === "guess" && (v.options ? (<>
+                    <span className="label">Last chance</span><h2 className="title">What was the word?</h2>
+                    <div className="ggrid">{v.options.map((w: string, k: number) => <motion.button key={w} type="button" className="gtile" whileTap={{ scale: 0.95 }} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: k * 0.05 }} onClick={() => send({ t: "guess", word: w })}>{w}</motion.button>)}</div>
+                  </>) : (<div className="lobby-wait big"><Face k={v.guesser} size={84} ring="#E5484D" /><strong>{nm(v.guesser)} is guessing the word</strong><DotLoaderMini /></div>))}
+
+                  {v.phase === "results" && (<>
+                    <div className={`result ${v.outcome}`}>
+                      <span className="label">{v.outcome === "caught" ? "Crew wins" : "Imposter wins"}</span>
+                      <strong>{v.outcome === "caught" ? `${nm(v.imposter)} was caught` : v.outcome === "stolen" ? `${nm(v.imposter)} guessed “${v.word}”` : `${nm(v.imposter)} fooled everyone`}</strong>
+                      <div className="wordline"><span>The word was</span><b>{v.word}</b></div>
+                    </div>
+                    <div className="board">{P.map((p: any, k: number) => ({ ...p, k })).sort((a: any, b: any) => b.score - a.score).map((p: any, r: number) => (
+                      <motion.div key={p.k} layout className="brow" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + r * 0.08 }}>
+                        <span className="rank">{r + 1}</span><Face k={p.k} size={36} ring={p.k === v.imposter ? "#E5484D" : undefined} />
+                        <strong>{p.name}{p.k === v.imposter && <em>imposter</em>}{p.k === me && <em className="you">you</em>}</strong>
+                        {v.points?.[p.k] > 0 && <span className="plus">+{v.points[p.k]}</span>}<span className="total">{p.score}</span></motion.div>))}</div>
+                  </>)}
+                </motion.section>
+              </AnimatePresence>
+            </>
+          )}
+        </div>
+        {dock && (
+          <div className="dock in-card">
+            <div className="dock-sum"><strong>{dock.sum}</strong><span>{dock.sub}</span></div>
+            {dock.alts?.map((a: any) => <motion.button key={a.label} type="button" className={`dock-alt ${a.icon ? "with-ico" : ""}`} whileTap={{ scale: 0.95 }} onClick={a.on}>{a.icon && <Ln d={a.icon} />}<span>{a.label}</span></motion.button>)}
+            {dock.btn && <MBWrap><motion.button type="button" className={`go dock-go ${dock.btn.tone ?? ""}`} disabled={dock.btn.disabled} whileTap={{ scale: 0.96 }} onClick={dock.btn.on}>{dock.btn.label}<Ln d="M5 12h14M13 6l6 6-6 6" /></motion.button></MBWrap>}
+          </div>
+        )}
+      </motion.aside>
+      <AnimatePresence>{toast && <motion.div className="toast" role="status" initial={{ y: 30, opacity: 0, x: "-50%" }} animate={{ y: 0, opacity: 1, x: "-50%" }} exit={{ y: 20, opacity: 0, x: "-50%" }}>{toast}</motion.div>}</AnimatePresence>
+      {cheer && <Confetti run={v?.round ?? 0} />}
+    </div>
+  );
+}
+
+const DotLoaderMini = () => <span className="dotl" aria-hidden="true"><i /><i /><i /></span>;
+
+/* ---------- moving border (from the user's component): a glow that travels round the main button ---------- */
+function MovingBorder({ children, duration = 3200, rx = "16", ry = "16" }: { children: any; duration?: number; rx?: string; ry?: string }) {
+  const pathRef = useRef<any>(null); const progress = useMotionValue(0);
+  useAnimationFrame((time: number) => { const len = pathRef.current?.getTotalLength?.(); if (len) progress.set((time * (len / duration)) % len); });
+  const x = useTransform(progress, (val: number) => pathRef.current?.getPointAtLength(val).x ?? 0);
+  const y = useTransform(progress, (val: number) => pathRef.current?.getPointAtLength(val).y ?? 0);
+  const transform = useMotionTemplate`translateX(${x}px) translateY(${y}px) translateX(-50%) translateY(-50%)`;
+  return (<>
+    <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="mb-svg" width="100%" height="100%"><rect fill="none" width="100%" height="100%" rx={rx} ry={ry} ref={pathRef} /></svg>
+    <motion.div style={{ position: "absolute", top: 0, left: 0, display: "inline-block", transform }}>{children}</motion.div>
+  </>);
+}
+function MBWrap({ children, wide = false }: { children: any; wide?: boolean }) {
+  return <span className={`mb ${wide ? "wide" : ""}`}><span className="mb-track" aria-hidden="true"><MovingBorder><i className="mb-glow" /></MovingBorder></span>{children}</span>;
+}
+
+/* ---------- the lever switch (from the user's component), for the rules ---------- */
+function Lever({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} aria-label={label} className="lever switch-like" onClick={(e) => { e.stopPropagation(); onChange(!on); navigator.vibrate?.(8); }}>
+      <span className="lever-base"><span className="lever-slot" /></span>
+      <span className="lever-arm"><span className="lever-rod" /><span className="lever-knob" /></span>
+    </button>
+  );
+}
+
 function Root() {
-  const [screen, setScreen] = useState<"home" | "game">("home");
+  const linkRoom = (() => { try { return (new URLSearchParams(location.search).get("room") || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4); } catch { return ""; } })();
+  const [screen, setScreen] = useState<"home" | "game" | "room">(linkRoom ? "room" : "home");
+  const [room, setRoom] = useState<any>(linkRoom ? { role: "guest", code: linkRoom } : null);
+  const toHome = () => { setScreen("home"); window.scrollTo(0, 0); try { history.replaceState(null, "", location.pathname); } catch {} };
   const [run, setRun] = useState(0);
   const start = (cfg: any) => { PLAYERS = cfg.players; PACK = cfg.pack; RULES = cfg.rules; setRun((r) => r + 1); setScreen("game"); window.scrollTo(0, 0); };
   return (
     <AnimatePresence mode="wait">
       {screen === "home"
-        ? <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.02, filter: "blur(6px)" }} transition={{ duration: 0.4, ease }}><Home onStart={start} /></motion.div>
+        ? <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.02, filter: "blur(6px)" }} transition={{ duration: 0.4, ease }}><Home onStart={start} onRoom={(role, cfg) => { setRoom({ role, cfg }); setRun((r) => r + 1); setScreen("room"); window.scrollTo(0, 0); }} /></motion.div>
+        : screen === "room" ? <motion.div key={`room-${run}`} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, filter: "blur(6px)" }} transition={{ duration: 0.45, ease }}><NetRoom role={room.role} cfg={room.cfg} startCode={room.code} onMenu={toHome} /></motion.div>
         : <motion.div key={`game-${run}`} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, filter: "blur(6px)" }} transition={{ duration: 0.45, ease }}><Game onMenu={() => { setScreen("home"); window.scrollTo(0, 0); }} /></motion.div>}
     </AnimatePresence>
   );
